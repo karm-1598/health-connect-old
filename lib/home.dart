@@ -93,17 +93,15 @@ class _home_screenState extends State<home_screen> {
         title: Text.rich(
                         TextSpan(
                           text: 'Welcome  ',
-                          style: TextStyle(fontSize: 20,color: Color.fromARGB(177, 255, 255, 255)), 
+                          style: TextTheme.of(context).headlineMedium, 
                           children: [
                             TextSpan(
                               text: '$name ',
-                              style: const TextStyle(fontSize:30, fontWeight: FontWeight.bold,color: Colors.white),
+                              style:TextTheme.of(context).headlineLarge
                             ),
                           ],
                         ),
                       ),
-        backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
-        toolbarHeight: 100,
       ),
       body: SingleChildScrollView(
         child: Column(
