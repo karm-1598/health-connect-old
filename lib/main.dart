@@ -6,6 +6,7 @@ import 'package:health_connect2/config/themeData.dart';
 import 'package:health_connect2/home.dart';
 // import 'package:health_connect2/notification_services.dart';
 import 'package:health_connect2/provider_home.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/user_or_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -92,14 +93,12 @@ class _SplashState extends State<Splash> {
     bool logincheck2 = prefs.getBool('keepLogedIn2') ?? false;
 
     if (logincheck) {
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => home_screen()),
-      );
+      goto.home_screen();
+      
     } else if(logincheck2){
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => ProviderHome()),
-      );
+      goto.ProviderHome();
     } else {
-      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserOrProvider()),
-      );
+      goto.UserOrProvider();
     }
   }
 }

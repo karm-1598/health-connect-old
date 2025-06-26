@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:health_connect2/about_us.dart';
 import 'package:health_connect2/lab_list.dart';
 import 'package:health_connect2/nurse_list.dart';
@@ -230,7 +231,8 @@ class _home_screenState extends State<home_screen> {
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NurseList()));
+                                  // Navigator.push(context, MaterialPageRoute(builder: (context) => const NurseList()));
+                                  Get.to(NurseList());
                                 },
                                 label: Text('Nurses'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
@@ -270,7 +272,7 @@ class _home_screenState extends State<home_screen> {
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const LabList()));
+                                  Get.to(LabList());
                                 },
                                 label: Text('Labs'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
@@ -303,7 +305,7 @@ class _home_screenState extends State<home_screen> {
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => const PhysioList()));
+                                  Get.to(PhysioList());
                                 },
                                 label: Text('Physio..'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
