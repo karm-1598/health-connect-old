@@ -1,8 +1,7 @@
-import 'dart:convert';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/widgets/custom_textformfield.dart';
-import 'user_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'package:flutter/material.dart';
 
 class register extends StatefulWidget {
@@ -22,6 +21,7 @@ class _registerState extends State<register> {
   final mobileController = TextEditingController();
   final passController = TextEditingController();
   final passConfirmController = TextEditingController();
+  var api=baseApi();
 
   void signUpData() async {
     if (_formkey2.currentState!.validate()) {
@@ -31,38 +31,23 @@ class _registerState extends State<register> {
       String umobile = mobileController.text;
       String upass = passController.text;
 
-      var url = Uri.parse('http://192.168.255.215/api/user_insert.php');
-
-      var mydata = {
+      var response = await api.post('user_insert.php',{
         'sname': uname,
         'semail': uemail,
         'smobile': umobile,
         'saddress': uaddress,
         'spassword': upass
-      };
+      });
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(mydata),
-          headers: {"Content-Type": "application/json"},
-        );
+        
 
-        var decodeData = jsonDecode(response.body);
+        var decodeData = response;
 
-        print('response status: ${response.statusCode}');
-        print('response body: ${response.body}');
-        print('decode data: $decodeData');
+        
 
         if (decodeData['flag'] == "1") {
-          Fluttertoast.showToast(
-              msg: decodeData['message'],
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.black,
-              textColor: Colors.white,
-              fontSize: 16);
+          toastMessage.show(decodeData['message']);
 
           nameController.clear();
           emailController.clear();
@@ -70,28 +55,13 @@ class _registerState extends State<register> {
           addressController.clear();
           mobileController.clear();
 
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const user_login()));
+          goto.openUserLogin();
         } else {
-          Fluttertoast.showToast(
-              msg: "registration failed: ${decodeData['message']}",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.black,
-              textColor: Colors.white,
-              fontSize: 16);
+          toastMessage.show("registration failed: ${decodeData['message']}");
         }
       } catch (e) {
         print('error: $e');
-        Fluttertoast.showToast(
-            msg: "error: $e",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16);
+        toastMessage.show("error: $e");
       }
     }
   }

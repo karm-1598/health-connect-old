@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -53,28 +54,22 @@ class _LabBookAppointmentState extends State<LabBookAppointment> {
       String status ='pending';
       String prof_type = 'lab';
 
-      var url = Uri.parse('http://192.168.60.215/api/appointment.php');
-
-      var myData ={
-        'user_id' : userId,
+      var api=baseApi();
+      var response =await api.post(
+        'appointment.php',
+        {'user_id' : userId,
         'prof_id' :proId,
         'profession_type' : prof_type,
         'date' :uDate,
         'time' : uTime,
         'status' :status,
-        'reason' : uReason,
-
-      };
+        'reason' : uReason,}        
+       );
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(myData),
-          headers: {"Content-Type": "application/json"},
-        );
 
-        var decodeData = jsonDecode(response.body);
+        var decodeData = response;
 
-        if (decodeData.containsKey('success') && decodeData['success'] == true) {
+        if (decodeData['success'] == true) {
             Fluttertoast.showToast(
             msg: decodeData['message'],
             toastLength: Toast.LENGTH_SHORT,
@@ -83,6 +78,7 @@ class _LabBookAppointmentState extends State<LabBookAppointment> {
             textColor: Colors.white,
             fontSize: 16.0,
           );
+          goto.gobackHome();
         } else {
           Fluttertoast.showToast(
             msg: "Failed to create Appointment: ${decodeData['message'] ?? 'Unknown error'}",
@@ -109,14 +105,12 @@ class _LabBookAppointmentState extends State<LabBookAppointment> {
 
   // Function to fetch doctor details
   Future<Map<String, dynamic>> fetchDoctors(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.60.215/api/lab_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    
+    var api=baseApi();
+    var response =await api.post('lab_single_data.php', {'sid':id});
+    
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse = response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -125,9 +119,7 @@ class _LabBookAppointmentState extends State<LabBookAppointment> {
       } catch (e) {
         throw Exception('Failed to parse Laboratory details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load Laboratory details');
-    }
+    
   }
 
 Future<void> selectDate(BuildContext context) async {
@@ -137,9 +129,9 @@ Future<void> selectDate(BuildContext context) async {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != DateTime.now())
+    if (picked != null && picked != DateTime.now()){}
       setState(() {
-        date = DateFormat('yyyy-MM-dd').format(picked);
+        date = DateFormat('yyyy-MM-dd').format(picked!);
         _dateController.text = date!;
       });
   }

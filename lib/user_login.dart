@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/widgets/custom_textformfield.dart';
-import 'home.dart';
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'user_registration.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
 
 class user_login extends StatefulWidget {
   const user_login({super.key});
@@ -28,27 +27,14 @@ class _user_loginState extends State<user_login> {
       String uemail = emailController.text;
       String upassword = passController.text;
 
-      var url = Uri.parse('http://192.168.1.7/api/user_login.php');
-
-      var myData = {
+      final api = baseApi();
+      var login = await api.post('user_login.php', {
         'semail': uemail,
         'spassword': upassword,
-      };
+      });
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(myData),
-          headers: {"Content-Type": "application/json"},
-        );
-        print('STATUS: ${response.statusCode}');
-        print('BODY: "${response.body}"');
-        print('LENGTH: ${response.body.length}');
-
-        var decodeData = jsonDecode(response.body);
-
-        print("response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
+        var decodeData = login;
 
         if (decodeData['flag'] == "1") {
           var sharedName = decodeData['user_name'];
@@ -62,38 +48,18 @@ class _user_loginState extends State<user_login> {
           await prefs.setString('id', sharedId);
           await prefs.setString('location', address);
 
-          Fluttertoast.showToast(
-            msg: decodeData['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+          toastMessage.show(decodeData['message']);
 
           emailController.clear();
           passController.clear();
 
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const home_screen()));
+          goto.gobackHome();
         } else {
-          Fluttertoast.showToast(
-              msg: "Login Failed: ${decodeData['message']}",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.black,
-              textColor: Colors.white,
-              fontSize: 16.0);
+          toastMessage.show("Login Failed: ${decodeData['message']}");
         }
       } catch (e) {
         print('error: $e');
-        Fluttertoast.showToast(
-            msg: "Error: $e",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0);
+        toastMessage.show("Error: $e");
       }
     }
   }
@@ -123,7 +89,6 @@ class _user_loginState extends State<user_login> {
                         height: 40,
                       ),
 
-      
                       customFormField(
                         labelText: 'Email',
                         hintText: 'email should special symbol',
@@ -137,7 +102,9 @@ class _user_loginState extends State<user_login> {
                             return null;
                           }
                         },
-                        icon: Icon(Icons.email,),
+                        icon: Icon(
+                          Icons.email,
+                        ),
                       ),
 
                       const SizedBox(
@@ -174,7 +141,6 @@ class _user_loginState extends State<user_login> {
                         },
                       ),
 
-                      
                       const SizedBox(
                         height: 20,
                       ),

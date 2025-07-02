@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:health_connect2/provider_login.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:health_connect2/widgets/custom_textformfield.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -38,10 +40,24 @@ class _doc_registrationState extends State<doc_registration> {
       String upass = passController.text;
       String uemail = emailController.text;
 
-      var url = Uri.parse('http://192.168.60.215/api/doc_insert.php');
+      // var url = Uri.parse('http://192.168.60.215/api/doc_insert.php');
 
-      var mydata = {
-        'name': uname,
+      // var mydata = {
+        // 'name': uname,
+        // 'lastname': ulastname,
+        // 'experience': uyearExe,
+        // 'availability_slot_days': uslotday,
+        // 'availability_slot_time': uslottime,
+        // 'qualification': uquli,
+        // 'avg_consultation_fee': ufee,
+        // 'password': upass,
+        // 'email': uemail
+      // };
+
+      var api=baseApi();
+      var response= await api.post(
+        'doc_insert.php',
+         {'name': uname,
         'lastname': ulastname,
         'experience': uyearExe,
         'availability_slot_days': uslotday,
@@ -49,21 +65,13 @@ class _doc_registrationState extends State<doc_registration> {
         'qualification': uquli,
         'avg_consultation_fee': ufee,
         'password': upass,
-        'email': uemail
-      };
-
-      try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(mydata),
-          headers: {"Content-Type": "application/json"},
+        'email': uemail}
         );
 
-        var decodeData = jsonDecode(response.body);
+      try {
+        
 
-        print('response status: ${response.statusCode}');
-        print('response body: ${response.body}');
-        print('decode data: $decodeData');
+        var decodeData = response;
 
         if (decodeData['flag'] == "1") {
           Fluttertoast.showToast(
@@ -86,8 +94,7 @@ class _doc_registrationState extends State<doc_registration> {
           feeController.clear();
           emailController.clear();
 
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => const providerLogin()));
+          goto.openProviderLogin();
         } else {
           Fluttertoast.showToast(
             msg: "Registration failed: ${decodeData['message']}",
@@ -118,7 +125,10 @@ class _doc_registrationState extends State<doc_registration> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Registration',style: TextStyle(color: Colors.white),),
+        title: const Text(
+          'Doctor Registration',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
       ),
       body: Padding(
@@ -149,14 +159,11 @@ class _doc_registrationState extends State<doc_registration> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              labelText: 'Name',
-                              hintText: 'Please enter your name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.person),
-                            ),
+                          customFormField(
+                            hintText: 'Please enter your name',
                             controller: nameController,
+                            labelText: 'Name',
+                            icon: Icon(Icons.person),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Name';
@@ -165,14 +172,11 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              labelText: 'Last Name',
-                              hintText: 'Please enter your last name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.person),
-                            ),
+                          customFormField(
+                            hintText: 'Please enter your last name',
                             controller: lastnameController,
+                            labelText: 'Last Name',
+                            icon: Icon(Icons.person),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Last Name';
@@ -181,15 +185,11 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Year of Experience',
-                              hintText: 'Please enter your years of experience',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.work),
-                            ),
+                          customFormField(
+                            hintText: 'Please enter your years of experience',
                             controller: yearExeController,
+                            labelText: 'Year of Experience',
+                            icon: Icon(Icons.work),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Year of Experience';
@@ -250,33 +250,26 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-
-                          TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  hintText: 'Enter a valid email address',
-                  suffixIcon: const Icon(Icons.email)
-                ),
-                controller: emailController,
-                validator: (value) {
-                if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                  return 'Enter a valid email';
-                }else{
-                  return null;
-                }
-              },
-              ),
-                          SizedBox( height: 20 ),
-                          
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              labelText: 'Qualifications',
-                              hintText: 'Enter your qualifications',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.book),
-                            ),
+                          customFormField(
+                              hintText: 'Enter a valid email address',
+                              controller: emailController,
+                              labelText: 'Email',
+                              icon: Icon(Icons.email),
+                              validator: (value) {
+                                if (value == null ||
+                                    !RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                        .hasMatch(value)) {
+                                  return 'Enter a valid email';
+                                } else {
+                                  return null;
+                                }
+                              }),
+                          SizedBox(height: 20),
+                          customFormField(
+                            hintText: 'Enter your qualifications',
                             controller: qualificationController,
+                            labelText: 'qualification',
+                            icon: Icon(Icons.book),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Qualification';
@@ -285,14 +278,11 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              labelText: 'Availability Slot (Time)',
-                              hintText: 'Enter possible time',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.access_time),
-                            ),
-                            controller: slottimeController,
+                          customFormField(
+                            hintText: 'Enter possible time',
+                            controller: slotdayController,
+                            labelText: 'Availability Slot (Day)',
+                            icon: Icon(Icons.access_time),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Slot Time';
@@ -301,14 +291,11 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
-                              labelText: 'Availability Slot (Day)',
-                              hintText: 'Enter possible days',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
-                            controller: slotdayController,
+                          customFormField(
+                            labelText: 'Availability Slot (Time)',
+                            hintText: 'Enter possible time',
+                            icon: Icon(Icons.calendar_today),
+                            controller: slottimeController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Invalid Slot Day';
@@ -317,14 +304,11 @@ class _doc_registrationState extends State<doc_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
+                          customFormField(
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Average Consultation Fee',
-                              hintText: 'Enter fee',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.money),
-                            ),
+                            labelText: 'Average Consultation Fee',
+                            hintText: 'Enter fee',
+                            icon: Icon(Icons.money),
                             controller: feeController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:health_connect2/network/commonApi_fun.dart';
 
 class CompletedAppointments extends StatefulWidget {
   final String profId;
@@ -22,15 +21,18 @@ class _CompletedAppointmentsState extends State<CompletedAppointments> {
   
 
  Future<List<Map<String, dynamic>>> getAppointments(String id, type) async {
-  final response = await http.post(
-    Uri.parse('http://192.168.60.215/api/completed_appointments.php'),
-    body: jsonEncode({'prof_id': id, 'profession_type': type}),
-    headers: {"Content-Type": "application/json"},
-  );
+  // final response = await http.post(
+  //   Uri.parse('http://192.168.60.215/api/completed_appointments.php'),
+  //   body: jsonEncode({'prof_id': id, 'profession_type': type}),
+  //   headers: {"Content-Type": "application/json"},
+  // );
 
-  if (response.statusCode == 200) {
+  var api=baseApi();
+  var complete = await api.post('completed_appointments.php', {'prof_id': id, 'profession_type': type});
+
+  
     try {
-      var jsonResponse = jsonDecode(response.body);
+      var jsonResponse = complete;
 
       print('Response: $jsonResponse'); 
 
@@ -43,9 +45,7 @@ class _CompletedAppointmentsState extends State<CompletedAppointments> {
       print('Error: $e'); 
       throw Exception('Failed to parse Cpmpleted Appointment details. Response might be invalid JSON.');
     }
-  } else {
-    throw Exception('Failed to load Completed Appointment details');
-  }
+  
 }
 
   @override

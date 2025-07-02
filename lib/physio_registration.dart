@@ -1,7 +1,7 @@
-import 'dart:convert';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/provider_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/widgets/custom_textformfield.dart';
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'package:flutter/material.dart';
 
 class PhysioRegistration extends StatefulWidget {
@@ -38,9 +38,11 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
       String upass = passController.text;
       String uemail = emailController.text;
 
-      var url = Uri.parse('http://192.168.255.215/api/physio_insert.php');
+      
 
-      var mydata = {
+      var api=baseApi();
+
+      var response= await api.post('physio_insert.php', {
         'name': uname,
         'lastname': ulastname,
         'experience': uyearExe,
@@ -50,31 +52,15 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
         'avg_consultation_fee': ufee,
         'password': upass,
         'email': uemail
-      };
+      });
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(mydata),
-          headers: {"Content-Type": "application/json"},
-        );
+        
 
-        var decodeData = jsonDecode(response.body);
-
-        print('response status: ${response.statusCode}');
-        print('response body: ${response.body}');
-        print('decode data: $decodeData');
+        var decodeData =response;
 
         if (decodeData['flag'] == "1") {
-          Fluttertoast.showToast(
-            msg: decodeData['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16,
-          );
+          toastMessage.show(decodeData['message']);
 
           nameController.clear();
           lastnameController.clear();
@@ -89,27 +75,11 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const providerLogin()));
         } else {
-          Fluttertoast.showToast(
-            msg: "Registration failed: ${decodeData['message']}",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16,
-          );
+          toastMessage.show("Registration failed: ${decodeData['message']}");
         }
       } catch (e) {
         print('error: $e');
-        Fluttertoast.showToast(
-          msg: "Error: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16,
-        );
+        toastMessage.show( "Error: $e");
       }
     }
   }
@@ -118,8 +88,7 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Physiotherapist Registration', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
+        title: const Text('Physiotherapist Registration', ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(30),
@@ -150,13 +119,10 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                       child: Column(
                         children: [
                           // Name
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Name',
                               hintText: 'Please enter your name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.person),
-                            ),
+                              icon: Icon(Icons.person),
                             controller: nameController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -165,14 +131,13 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                               return null;
                             },
                           ),
+
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+
+                          customFormField(
                               labelText: 'Last Name',
                               hintText: 'Please enter your last name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.person),
-                            ),
+                              icon: Icon(Icons.person),
                             controller: lastnameController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -182,14 +147,11 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
+                          customFormField(
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
                               labelText: 'Year of Experience',
                               hintText: 'Please enter your years of experience',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.work),
-                            ),
+                              icon: Icon(Icons.work),
                             controller: yearExeController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -199,6 +161,7 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                             },
                           ),
                           const SizedBox(height: 20),
+                          
                           TextFormField(
                             obscureText: !_isPasswordVisible,
                             decoration: InputDecoration(
@@ -252,13 +215,10 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                           ),
                           const SizedBox(height: 20),
 
-                          TextFormField(
-                decoration: InputDecoration(
+                          customFormField(
                   labelText: 'Email',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   hintText: 'Enter a valid email address',
-                  suffixIcon: const Icon(Icons.email)
-                ),
+                  icon: const Icon(Icons.email),
                 controller: emailController,
                 validator: (value) {
                 if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
@@ -270,13 +230,10 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
               ),
                           SizedBox( height: 20 ),
                           
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Qualifications',
                               hintText: 'Enter your qualifications',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.book),
-                            ),
+                              icon: Icon(Icons.book),
                             controller: qualificationController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -286,13 +243,10 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Availability Slot (Time)',
                               hintText: 'Enter possible time',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.access_time),
-                            ),
+                              icon: Icon(Icons.access_time),
                             controller: slottimeController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -302,13 +256,10 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Availability Slot (Day)',
                               hintText: 'Enter possible days',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
+                              icon: Icon(Icons.calendar_today),
                             controller: slotdayController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -318,14 +269,11 @@ class _PhysioRegistrationState extends State<PhysioRegistration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
+                          customFormField(
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
                               labelText: 'Average Consultation Fee',
                               hintText: 'Enter fee',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.money),
-                            ),
+                              icon: Icon(Icons.money),
                             controller: feeController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {

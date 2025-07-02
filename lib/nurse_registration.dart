@@ -1,7 +1,7 @@
-import 'dart:convert';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:health_connect2/provider_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:health_connect2/widgets/custom_textformfield.dart';
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'package:flutter/material.dart';
 
 class NurseRegistration extends StatefulWidget {
@@ -25,6 +25,7 @@ class _NurseRegistrationState extends State<NurseRegistration> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  var api=baseApi();
 
   void registerNurse() async {
     if (_formKey.currentState!.validate()) {
@@ -38,9 +39,9 @@ class _NurseRegistrationState extends State<NurseRegistration> {
       String email = emailController.text;
       String password = passwordController.text;
 
-      var url = Uri.parse('http://192.168.255.215/api/nurse_insert.php');
+      
 
-      var nurseData = {
+      var response =await api.post('nurse_insert.php', {
         'name': name,
         'lastname': lastname,
         'experience': experience,
@@ -50,30 +51,13 @@ class _NurseRegistrationState extends State<NurseRegistration> {
         'consultation_fee': consultationFee,
         'email': email,
         'password': password,
-      };
+      });
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(nurseData),
-          headers: {"Content-Type": "application/json"},
-        );
-
-        var decodedResponse = jsonDecode(response.body);
-
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        var decodedResponse = response;
 
         if (decodedResponse['flag'] == "1") {
-          Fluttertoast.showToast(
-            msg: decodedResponse['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16,
-          );
+          toastMessage.show(decodedResponse['message']);
 
           nameController.clear();
           lastnameController.clear();
@@ -86,30 +70,13 @@ class _NurseRegistrationState extends State<NurseRegistration> {
           passwordController.clear();
           confirmPasswordController.clear();
 
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => const providerLogin()));
+          goto.openProviderLogin();
         } else {
-          Fluttertoast.showToast(
-            msg: "Registration failed: ${decodedResponse['message']}",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16,
-          );
+          toastMessage.show("Registration failed: ${decodedResponse['message']}");
         }
       } catch (e) {
         print('Error: $e');
-        Fluttertoast.showToast(
-          msg: "Error: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16,
-        );
+        toastMessage.show("Error: $e");
       }
     }
   }
@@ -138,13 +105,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 40),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Name',
                     hintText: 'Enter your first name',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.person),
-                  ),
+                    icon: Icon(Icons.person),
                   controller: nameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -155,13 +119,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Last Name',
                     hintText: 'Enter your last name',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.person),
-                  ),
+                    icon: Icon(Icons.person),
                   controller: lastnameController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -172,14 +133,11 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
+                customFormField(
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
                     labelText: 'Years of Experience',
                     hintText: 'Enter your years of experience',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.work),
-                  ),
+                    icon: Icon(Icons.work),
                   controller: experienceController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -190,13 +148,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Qualifications',
                     hintText: 'Enter your qualifications',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.book),
-                  ),
+                    icon: Icon(Icons.book),
                   controller: qualificationController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -207,13 +162,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Shift Time',
                     hintText: 'Enter your shift time',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.access_time),
-                  ),
+                    icon: Icon(Icons.access_time),
                   controller: shiftTimeController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -224,13 +176,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Shift Days',
                     hintText: 'Enter your shift days',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.calendar_today),
-                  ),
+                    icon: Icon(Icons.calendar_today),
                   controller: shiftDaysController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -241,14 +190,11 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
+                customFormField(
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
                     labelText: 'Consultation Fee',
                     hintText: 'Enter your consultation fee',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.money),
-                  ),
+                    icon: Icon(Icons.money),
                   controller: consultationFeeController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -259,13 +205,10 @@ class _NurseRegistrationState extends State<NurseRegistration> {
                 ),
                 const SizedBox(height: 20),
                 
-                TextFormField(
-                  decoration: const InputDecoration(
+                customFormField(
                     labelText: 'Email',
                     hintText: 'Enter your email address',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.email),
-                  ),
+                   icon: Icon(Icons.email),
                   controller: emailController,
                   validator: (value) {
                     if (value == null ||

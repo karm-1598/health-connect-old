@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/physio_book_appointment.dart';
-import 'package:health_connect2/physio_individual_profile.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 
 class PhysioList extends StatefulWidget {
   const PhysioList({super.key});
@@ -22,17 +20,13 @@ class _PhysioListState extends State<PhysioList> {
     physiotherapists = fetchPhysios();
     searchController.addListener(_searchChanged);
   }
-
+  var api=baseApi();
   Future<List<Map<String, dynamic>>> fetchPhysios() async {
-    const url = 'http://192.168.255.215/api/physio_data.php'; 
+     var response = await api.get('physio_data.php');
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        List jsonResponse = jsonDecode(response.body);
+        List jsonResponse = response;
         return List<Map<String, dynamic>>.from(jsonResponse);
-      } else {
-        throw Exception('Failed to load physiotherapists');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load physiotherapists: $e');
     }
@@ -40,15 +34,11 @@ class _PhysioListState extends State<PhysioList> {
 
   Future<List<Map<String, dynamic>>> _searchPhysios(String searchValue) async {
     try {
-      final response = await http.get(
-        Uri.parse('http://192.168.255.215/api/physio_search.php?search=$searchValue'), 
-      );
-      if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
+      var response= await api.get('physio_search.php',queryParams: {'search':searchValue});
+      
+        List data = response;
         return data.cast<Map<String, dynamic>>();
-      } else {
-        throw Exception('Failed to search physiotherapists');
-      }
+      
     } catch (e) {
       throw Exception('Failed to search physiotherapists with this name');
     }
@@ -193,10 +183,7 @@ class _PhysioListState extends State<PhysioList> {
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context, 
-                                          MaterialPageRoute(builder: (context) => PhysioBookAppointment(physiotherapistId: physiotherapist['id'])) // updated to Physio profile
-                                        );
+                                        goto.openPhysioBookAppointment(id: physiotherapist['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1),
@@ -209,10 +196,7 @@ class _PhysioListState extends State<PhysioList> {
 
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context, 
-                                          MaterialPageRoute(builder: (context) => PhysioIndividualProfile(physiotherapistId: physiotherapist['id'])) // updated to Physio profile
-                                        );
+                                        goto.openPhysioIndividualProfile(id: physiotherapist['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1 ),

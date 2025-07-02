@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/lab_registration.dart';
-import 'package:health_connect2/nurse_registration.dart';
-import 'package:health_connect2/physio_registration.dart';
-import 'doctor_registration.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 
 class select_category extends StatefulWidget {
   const select_category({super.key});
@@ -90,28 +87,16 @@ class _select_categoryState extends State<select_category> {
   void _navigateToService(int index) {
     switch (services[index]) {
       case 'Doctor':
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const doc_registration()),
-        );
+        goto.openDocResgistration();
         break;
       case 'Nurse':
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => NurseRegistration()),
-        );
+        goto.openNurseRegistration();
         break;
       case 'Lab':
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => lab_registration()),
-        );
+        goto.openLabRegistration();
         break;
       case 'Physiotherapist':
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PhysioRegistration()),
-        );
+        goto.openPhysioRegistration();
         break;
     }
   }

@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,14 +37,17 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
 
   // Function to fetch doctor details
   Future<Map<String, dynamic>> fetchDoctors(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.60.215/api/doc_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    // final response = await http.post(
+    //   Uri.parse('http://192.168.60.215/api/doc_single_data.php'),
+    //   body: jsonEncode({'sid': id}),
+    //   headers: {"Content-Type": "application/json"},
+    // );
+    var api=baseApi();
+    var response= await api.post('doc_single_data.php', {'sid': id});
+
+    
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse =response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -51,23 +56,18 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
       } catch (e) {
         throw Exception('Failed to parse doctor details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load Doctor details');
-    }
+    
   }
 
   // Function to fetch reviews for the specific doctor
   Future<List<Map<String, dynamic>>> fetchReview(String docId) async {
-    final url = 'http://192.168.60.215/api/doc_get_review.php'; 
+    // final url = 'http://192.168.60.215/api/doc_get_review.php'; 
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'docId': docId}), 
-      );
+    var api=baseApi();
+    var response= await api.post('doc_get_review.php', {'docId':docId});
 
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+      
+        final jsonResponse = response;
 
         if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
           List<dynamic> reviews = jsonResponse['reviews']; // This is a list of reviews
@@ -80,9 +80,7 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
         } else {
           return [];
         }
-      } else {
-        throw Exception('Failed to load reviews');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load reviews: $e');
     }
@@ -90,23 +88,18 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
 
   // Function to add a review and refresh the reviews list
   void reviewAdd() async {
-    var url = Uri.parse('http://192.168.60.215/api/doc_add_review.php');
     
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    var api=baseApi();
+    var addReview= await api.post('doc_add_review.php', {
         'docId': widget.docId,
         'name': name,
         'review_text': reviewController.text,
-      }),
-    );
-    
-    print(response.body); 
+      });
+     
 
-    if (response.statusCode == 200) {
+    if (addReview['status']==true) {
       try {
-        var jsonResponse = jsonDecode(response.body);
+        var jsonResponse = addReview;
         if (jsonResponse['message'] == 'Review added successfully') {
           reviewController.clear();
           setState(() {
@@ -149,7 +142,7 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
             TextButton(
               child: Text('OK'),
               onPressed: () {
-                Navigator.of(context).pop();
+                goto.gobackHome();
               },
             ),
           ],

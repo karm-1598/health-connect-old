@@ -18,6 +18,7 @@ class customFormField extends StatelessWidget {
      this.passWord=false,
      this.icon,
      this.validator,
+     
     });
 
   @override

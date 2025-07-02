@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/provider_home.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/select_category.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/widgets/custom_textformfield.dart';
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class providerLogin extends StatefulWidget {
   const providerLogin({super.key});
@@ -25,31 +25,24 @@ class _providerLoginState extends State<providerLogin> {
   // Dropdown related variables
   String? selectedRole; // Stores selected role
   List<String> roles = ['Doctor', 'Nurse', 'Physiotherapist', 'Lab']; // Role options
+  var api=baseApi();
 
   void loginUpData() async {
     if (_formkey.currentState!.validate()) {
       String uemail = emailController.text;
       String upassword = passController.text;
 
-      var url = Uri.parse('http://192.168.255.215/api/providers_login.php');
-
-      var myData = {
+      var response= await api.post('providers_login', {
         'semail': uemail,
         'spassword': upassword,
-        'profession_type': selectedRole ?? '',  // Send selected role data to the server
-      };
+        'profession_type': selectedRole ?? '',  
+      });
+      
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(myData),
-          headers: {"content-Type": "application/json"},
-        );
+        
 
-        var decodeData = jsonDecode(response.body);
-
-        print("response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
+        var decodeData = response;
 
         if (decodeData['flag'] == "1") {
           var sharedName = decodeData['provider_name'];
@@ -65,39 +58,18 @@ class _providerLoginState extends State<providerLogin> {
           await prefs.setString('provider', sharedProvider);
           
 
-          Fluttertoast.showToast(
-            msg: decodeData['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+          toastMessage.show(decodeData['message']);
 
           emailController.clear();
           passController.clear();
 
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProviderHome()));
+          goto.gobackProviderHome();
         } else {
-          Fluttertoast.showToast(
-            msg: "Login Failed: ${decodeData['message']}",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+          toastMessage.show("Login Failed: ${decodeData['message']}");
         }
       } catch (e) {
         print('error: $e');
-        Fluttertoast.showToast(
-          msg: "Error: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+        toastMessage.show("Error: $e");
       }
     }
   }
@@ -123,12 +95,9 @@ class _providerLoginState extends State<providerLogin> {
                     ),
                   ),
                   const SizedBox(height: 40,),
-                  TextFormField(
-                    decoration: InputDecoration(
+                  customFormField(
                         labelText: 'Email',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        hintText: 'email should special symbol'
-                    ),
+                        hintText: 'email should special symbol',
                     controller: emailController,
                     validator: (value) {
                       if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {

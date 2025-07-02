@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NurseIndividualProfile extends StatefulWidget {
@@ -32,17 +31,13 @@ class _NurseIndividualProfileState extends State<NurseIndividualProfile> {
       name = prefs.getString('name')!;  // Get the logged-in user's name
     });
   }
-
+  var api=baseApi();
   // Function to fetch nurse details
   Future<Map<String, dynamic>> fetchNurses(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.60.215/api/nurse_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    final response = await api.post('nurse_single_data.php', {'sid':id});
+    
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse = response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -51,23 +46,15 @@ class _NurseIndividualProfileState extends State<NurseIndividualProfile> {
       } catch (e) {
         throw Exception('Failed to parse nurse details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load Nurse details');
-    }
+    
   }
 
   
   Future<List<Map<String, dynamic>>> fetchReview(String nurseId) async {
-    final url = 'http://192.168.60.215/api/nurse_get_review.php'; 
+     
+    var response= await api.post('nurse_get_review.php', {'nurseId':nurseId});
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'nurseId': nurseId}), 
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+        final jsonResponse =response;
 
         if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
           List<dynamic> reviews = jsonResponse['reviews']; 
@@ -80,9 +67,7 @@ class _NurseIndividualProfileState extends State<NurseIndividualProfile> {
         } else {
           return [];
         }
-      } else {
-        throw Exception('Failed to load reviews');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load reviews: $e');
     }
@@ -90,23 +75,15 @@ class _NurseIndividualProfileState extends State<NurseIndividualProfile> {
 
   
   void reviewAdd() async {
-    var url = Uri.parse('http://192.168.60.215/api/nurse_add_review.php');
-    
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    var response = await api.post('nurse_add_review.php',{
         'nurseId': widget.nurseId,  
         'name': name,
         'review_text': reviewController.text,
-      }),
-    );
+      });
     
-    print(response.body); 
-
-    if (response.statusCode == 200) {
+    
       try {
-        var jsonResponse = jsonDecode(response.body);
+        var jsonResponse = response;
         if (jsonResponse['message'] == 'Review added successfully') {
           reviewController.clear();
           setState(() {
@@ -138,31 +115,14 @@ class _NurseIndividualProfileState extends State<NurseIndividualProfile> {
           ),
         );
       }
-    } else {
-      print('Failed to submit review');
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to submit review. Please try again later.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        ),
-      );
-    }
+    
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(46, 68, 176, 1),
+        
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: nurses,

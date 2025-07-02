@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,17 +33,18 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
       name = prefs.getString('name')!;
     });
   }
-
+  var api=baseApi();
   // Function to fetch physiotherapist details
   Future<Map<String, dynamic>> fetchLaboratories(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.60.215/api/lab_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    // final response = await http.post(
+    //   Uri.parse('http://192.168.60.215/api/lab_single_data.php'),
+    //   body: jsonEncode({'sid': id}),
+    //   headers: {"Content-Type": "application/json"},
+    // );
+    var response= await api.post('lab_single_data.php', {'sid':id});
+    
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse = response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -51,23 +53,17 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
       } catch (e) {
         throw Exception('Failed to parse Laboratories details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load Laboratories details');
-    }
+    
   }
 
   // Function to fetch reviews for the specific physiotherapist
   Future<List<Map<String, dynamic>>> fetchReview(String labId) async {
-    final url = 'http://192.168.60.215/api/lab_get_review.php';
+    
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'lab_id': labId}),
-      );
+      var response = await api.post('lab_get_review.php', {'lab_id': labId});
 
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+      
+        final jsonResponse = response;
 
         if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
           List<dynamic> reviews = jsonResponse['reviews'];
@@ -80,9 +76,7 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
         } else {
           return [];
         }
-      } else {
-        throw Exception('Failed to load reviews');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load reviews: $e');
     }
@@ -90,23 +84,16 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
 
   
   void reviewAdd() async {
-    var url = Uri.parse('http://192.168.60.215/api/lab_add_review.php');
+    // var url = Uri.parse('http://192.168.60.215/api/lab_add_review.php');
 
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    var response = await api.post('lab_add_review.php',{
         'lab_id': widget.labId,
         'reviewer_name': name,
         'review_text': reviewController.text,
-      }),
-    );
-
-    print(response.body);
-
-    if (response.statusCode == 200) {
+      });
+    
       try {
-        var jsonResponse = jsonDecode(response.body);
+        var jsonResponse = response;
         if (jsonResponse['message'] == 'Review added successfully') {
           reviewController.clear();
           setState(() {
@@ -137,16 +124,13 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
           ),
         );
       }
-    } else {
-      print('Failed to submit review');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
+        
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: labs,
@@ -156,7 +140,7 @@ class _LabIndividualProfileState extends State<LabIndividualProfile> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No physiotherapist found'));
+            return const Center(child: Text('No Laboratries found'));
           } else {
             final lab = snapshot.data!;
             return Padding(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/provider_login.dart';
-import 'package:health_connect2/user_login.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 
 class UserOrProvider extends StatefulWidget {
   const UserOrProvider({super.key});
@@ -41,9 +40,7 @@ class _UserOrProviderState extends State<UserOrProvider> {
                       ),
                       TextButton.icon(
                         onPressed: () {
-                          Navigator.push(context,MaterialPageRoute(builder: (context) => const providerLogin(),
-                            ),
-                          );
+                          goto.openProviderLogin();
                         },
                         label: Text('Healthcare Providers'),
                         icon: Icon(Icons.arrow_circle_right_sharp),
@@ -77,12 +74,7 @@ class _UserOrProviderState extends State<UserOrProvider> {
                       ),
                       TextButton.icon(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const user_login(),
-                            ),
-                          );
+                          goto.openUserLogin();
                         },
                         label: Text('Users'),
                         icon: Icon(Icons.arrow_circle_right_sharp),

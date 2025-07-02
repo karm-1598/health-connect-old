@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PhysioIndividualProfile extends StatefulWidget {
@@ -32,17 +31,13 @@ class _PhysioIndividualProfileState extends State<PhysioIndividualProfile> {
       name = prefs.getString('name')!;
     });
   }
-
+  var api=baseApi();
   // Function to fetch physiotherapist details
   Future<Map<String, dynamic>> fetchPhysiotherapist(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.255.215/api/physio_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    final response = await api.post('physio_single_data.php', {'sid':id});
+   
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse = response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -51,23 +46,16 @@ class _PhysioIndividualProfileState extends State<PhysioIndividualProfile> {
       } catch (e) {
         throw Exception('Failed to parse physiotherapist details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load physiotherapist details');
-    }
+    
   }
 
   // Function to fetch reviews for the specific physiotherapist
   Future<List<Map<String, dynamic>>> fetchReview(String physiotherapistId) async {
-    final url = 'http://192.168.255.215/api/physio_get_review.php';
+    var response =await api.post('physio_get_review.php', {'physiotherapist_id': physiotherapistId});
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'physiotherapist_id': physiotherapistId}),
-      );
 
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+     
+        final jsonResponse = response;
 
         if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
           List<dynamic> reviews = jsonResponse['reviews']; // This is a list of reviews
@@ -80,9 +68,7 @@ class _PhysioIndividualProfileState extends State<PhysioIndividualProfile> {
         } else {
           return [];
         }
-      } else {
-        throw Exception('Failed to load reviews');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load reviews: $e');
     }
@@ -90,23 +76,20 @@ class _PhysioIndividualProfileState extends State<PhysioIndividualProfile> {
 
   // Function to add a review and refresh the reviews list
   void reviewAdd() async {
-    var url = Uri.parse('http://192.168.255.215/api/physio_add_review.php');
+    
 
-    var response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
+    var response=await api.post('physio_add_review.php', {
         'physiotherapist_id': widget.physiotherapistId,
         'reviewer_name': name,
         'review_text': reviewController.text,
-      }),
-    );
+      });
+    
 
-    print(response.body);
+    
 
-    if (response.statusCode == 200) {
+    
       try {
-        var jsonResponse = jsonDecode(response.body);
+        var jsonResponse = response;
         if (jsonResponse['message'] == 'Review added successfully') {
           reviewController.clear();
           setState(() {
@@ -138,16 +121,14 @@ class _PhysioIndividualProfileState extends State<PhysioIndividualProfile> {
           ),
         );
       }
-    } else {
-      print('Failed to submit review');
-    }
+    
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
+       
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: physiotherapist,

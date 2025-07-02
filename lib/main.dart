@@ -3,11 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health_connect2/config/themeData.dart';
-import 'package:health_connect2/home.dart';
 // import 'package:health_connect2/notification_services.dart';
-import 'package:health_connect2/provider_home.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
-import 'package:health_connect2/user_or_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -93,12 +90,12 @@ class _SplashState extends State<Splash> {
     bool logincheck2 = prefs.getBool('keepLogedIn2') ?? false;
 
     if (logincheck) {
-      goto.home_screen();
+      goto.openhome_screen();
       
     } else if(logincheck2){
-      goto.ProviderHome();
+      goto.openProviderHome();
     } else {
-      goto.UserOrProvider();
+      goto.openUserOrProvider();
     }
   }
 }

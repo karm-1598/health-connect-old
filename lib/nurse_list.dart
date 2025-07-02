@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/nurse_book_appointment.dart';
-import 'package:health_connect2/nurse_individual_profile.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 
 class NurseList extends StatefulWidget {
   const NurseList({super.key});
@@ -23,16 +21,14 @@ class _NurseListState extends State<NurseList> {
     searchController.addListener(_searchChanged);
   }
 
+  var api=baseApi();
   Future<List<Map<String, dynamic>>> fetchNurses() async {
-    const url = 'http://192.168.60.215/api/nurse_data.php';
+    var response = await api.get('nurse_data.php');
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        List jsonResponse = jsonDecode(response.body);
+      
+        List jsonResponse = response;
         return List<Map<String, dynamic>>.from(jsonResponse);
-      } else {
-        throw Exception('Failed to load nurses');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load nurses: $e');
     }
@@ -40,15 +36,14 @@ class _NurseListState extends State<NurseList> {
 
   Future<List<Map<String, dynamic>>> _searchNurses(String searchValue) async {
     try {
-      final response = await http.get(
-        Uri.parse('http://192.168.60.215/api/nurse_search.php?search=$searchValue'),
-      );
-      if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
+      // final response = await http.get(
+      //   Uri.parse('http://192.168.60.215/api/nurse_search.php?search=$searchValue'),
+      // );
+      var response =await api.get('nurse_search.php', queryParams: {'search':searchValue});
+      
+        List data = response;
         return data.cast<Map<String, dynamic>>();
-      } else {
-        throw Exception('Failed to search nurses');
-      }
+      
     } catch (e) {
       throw Exception('Failed to search nurses: $e');
     }
@@ -188,10 +183,7 @@ class _NurseListState extends State<NurseList> {
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context, 
-                                          MaterialPageRoute(builder: (context) => NurseBookAppointment(nurseId: nurse['id']))
-                                        );
+                                        goto.openNurseBookAppointment(id: nurse['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1),
@@ -203,10 +195,7 @@ class _NurseListState extends State<NurseList> {
                                     ),
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context, 
-                                          MaterialPageRoute(builder: (context) => NurseIndividualProfile(nurseId: nurse['id']))
-                                        );
+                                        goto.openNurseIndividualProfile(id: nurse['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1),

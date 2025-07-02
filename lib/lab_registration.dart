@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:health_connect2/provider_login.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:health_connect2/widgets/custom_textformfield.dart';
 import 'package:flutter/material.dart';
 
 class lab_registration extends StatefulWidget {
@@ -36,27 +36,30 @@ class _lab_registrationState extends State<lab_registration> {
       String password = passController.text;
       String email = emailController.text;
 
-      var url = Uri.parse('http://192.168.60.215/api/lab_insert.php'); 
+      // var url = Uri.parse('http://192.168.60.215/api/lab_insert.php'); 
 
-      var mydata = {
-        'lab_name': labName,
+      // var mydata = {
+        // 'lab_name': labName,
+        // 'lab_type': labType,
+        // 'lab_director': labDirector,
+        // 'operating_hours': operatingHours,
+        // 'lab_address': labAddress,
+        // 'pricing': pricing,
+        // 'email': email,
+        // 'password': password
+      // };
+      var api=baseApi();
+      var response = await api.post('lab_insert.php', {'lab_name': labName,
         'lab_type': labType,
         'lab_director': labDirector,
         'operating_hours': operatingHours,
         'lab_address': labAddress,
         'pricing': pricing,
         'email': email,
-        'password': password
-      };
+        'password': password});
 
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(mydata),
-          headers: {"Content-Type": "application/json"},
-        );
-
-        var decodeData = jsonDecode(response.body);
+        var decodeData = response;
 
         if (decodeData['flag'] == "1") {
           Fluttertoast.showToast(
@@ -69,6 +72,8 @@ class _lab_registrationState extends State<lab_registration> {
             fontSize: 16,
           );
 
+          
+
           labNameController.clear();
           labDirectorController.clear();
           operatingHoursController.clear();
@@ -77,8 +82,7 @@ class _lab_registrationState extends State<lab_registration> {
           passController.clear();
           emailController.clear();
 
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => const providerLogin()));
+          goto.openProviderLogin();
         } else {
           Fluttertoast.showToast(
             msg: "Registration failed: ${decodeData['message']}",
@@ -108,8 +112,7 @@ class _lab_registrationState extends State<lab_registration> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Laboratory Registration', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromRGBO(46, 68, 176, 1),
+        title: const Text('Laboratory Registration',),
       ),
       body: Padding(
         padding: const EdgeInsets.all(30),
@@ -139,13 +142,10 @@ class _lab_registrationState extends State<lab_registration> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Laboratory Name',
                               hintText: 'Enter laboratory name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.local_hospital),
-                            ),
+                              icon: Icon(Icons.local_hospital),
                             controller: labNameController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -182,13 +182,11 @@ class _lab_registrationState extends State<lab_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
+                            
                               labelText: 'Lab Director',
                               hintText: 'Enter the lab director\'s name',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.person),
-                            ),
+                              icon: Icon(Icons.person),
                             controller: labDirectorController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -198,13 +196,10 @@ class _lab_registrationState extends State<lab_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Operating Hours',
                               hintText: 'Enter operating hours',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.access_time),
-                            ),
+                              icon: Icon(Icons.access_time),
                             controller: operatingHoursController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -214,13 +209,10 @@ class _lab_registrationState extends State<lab_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Lab Address',
                               hintText: 'Enter laboratory address',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.location_on),
-                            ),
+                              icon: Icon(Icons.location_on),
                             controller: labAddressController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -230,14 +222,11 @@ class _lab_registrationState extends State<lab_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
+                          customFormField(
+                            keyboardType: TextInputType.number,                           
                               labelText: 'Pricing',
                               hintText: 'Enter pricing details',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.money),
-                            ),
+                              icon: Icon(Icons.money),
                             controller: pricingController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -299,13 +288,10 @@ class _lab_registrationState extends State<lab_registration> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          TextFormField(
-                            decoration: const InputDecoration(
+                          customFormField(
                               labelText: 'Email',
                               hintText: 'Enter a valid email address',
-                              border: OutlineInputBorder(),
-                              suffixIcon: Icon(Icons.email),
-                            ),
+                              icon: Icon(Icons.email),
                             controller: emailController,
                             validator: (value) {
                               if (value == null || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {

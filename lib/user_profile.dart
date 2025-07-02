@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/user_update.dart';
-import 'home.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'user_login.dart';
 
 class UserProfile extends StatefulWidget {
   final String studentId;
@@ -24,58 +22,40 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Future<Map<String, dynamic>> fetchUsers(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.255.215/api/user_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
+    var api = baseApi();
+    final response = await api.post('user_single_data.php', {'sid': id});
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonResponse = jsonDecode(response.body);
-      if (jsonResponse.isNotEmpty) {
-        return jsonResponse[0];
-      } else {
-        throw Exception('No User found with this ID');
-      }
+    List<dynamic> jsonResponse = response;
+    if (jsonResponse.isNotEmpty) {
+      return jsonResponse[0];
     } else {
-      throw Exception('Failed to load User details');
+      throw Exception('No User found with this ID');
     }
   }
 
   Future<void> deleteStudent(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.255.215/api/user_delete.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-
-    if (response.statusCode == 200) {
-      var responseData = jsonDecode(response.body);
+    var api=baseApi();
+    final response = await api.post('user_delete.php',{'sid': id});
+   
+      var responseData = response;
       if (responseData['status']) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(responseData['message'])),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => home_screen()),
-        );
+        goto.gobackHome();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Delete failed')),
         );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete student')),
-      );
-    }
+    
   }
 
   void logout() async {
     var prefs = await SharedPreferences.getInstance();
     await prefs.remove('keepLogedIn');
     setState(() {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const user_login()));
+      goto.openUserLogin();
     });
   }
 
@@ -116,7 +96,6 @@ class _UserProfileState extends State<UserProfile> {
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: Column(
-                    
                     children: [
                       Center(
                         child: CircleAvatar(
@@ -130,7 +109,6 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       SizedBox(height: 20),
-
                       Center(
                         child: Text(
                           users['name'],
@@ -152,9 +130,7 @@ class _UserProfileState extends State<UserProfile> {
                         ),
                       ),
                       SizedBox(height: 20),
-
                       Divider(color: Colors.grey.shade400),
-
                       ListTile(
                         leading: Icon(Icons.phone, color: Colors.blue),
                         title: Text(
@@ -169,28 +145,32 @@ class _UserProfileState extends State<UserProfile> {
                           style: TextStyle(fontSize: 18, color: Colors.black),
                         ),
                       ),
-
                       SizedBox(height: 20),
-
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton.icon(
                             onPressed: () {
-                              
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => UserUpdate(
-                                id: users['id'],
-                                name: users['name'],
-                                email: users['email'],
-                                mobile: users['mobile'],
-                                address: users['address'],
-                              )));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => UserUpdate(
+                                            id: users['id'],
+                                            name: users['name'],
+                                            email: users['email'],
+                                            mobile: users['mobile'],
+                                            address: users['address'],
+                                          )));
                             },
                             icon: Icon(Icons.edit, color: Colors.white),
-                            label: Text('Update',style: TextStyle(color: Colors.black),),
+                            label: Text(
+                              'Update',
+                              style: TextStyle(color: Colors.black),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -202,10 +182,15 @@ class _UserProfileState extends State<UserProfile> {
                               logout();
                             },
                             icon: Icon(Icons.delete, color: Colors.white),
-                            label: Text('Delete',style: TextStyle(color: Colors.black),),
+                            label: Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.black),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 197, 54, 44),
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 197, 54, 44),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -218,7 +203,6 @@ class _UserProfileState extends State<UserProfile> {
                 ),
               ),
             );
-
           }
         },
       ),

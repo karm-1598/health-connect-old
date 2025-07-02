@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:health_connect2/home.dart';
-import 'package:http/http.dart' as http;
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:health_connect2/widgets/toastmsg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class PhysioBookAppointment extends StatefulWidget {
@@ -44,42 +43,20 @@ class _PhysioBookAppointmentState extends State<PhysioBookAppointment> {
   // Razor pay payment gateway
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
   // Do something when payment succeeds
-  Fluttertoast.showToast(
-            msg: "Payment Successfull: ${response.paymentId} ",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
-          
+  toastMessage.show("Payment Successfull: ${response.paymentId} ");          
           Appointment();
   
 }
 
 void _handlePaymentError(PaymentFailureResponse response) {
   // Do something when payment fails
-  Fluttertoast.showToast(
-            msg: "Payment Failed: ${response.message} ",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+  toastMessage.show("Payment Failed: ${response.message} ");
           
 }
 
 void _handleExternalWallet(ExternalWalletResponse response) {
   // Do something when an external wallet is selected
-  Fluttertoast.showToast(
-            msg: "External Wallet: ${response.walletName} ",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+  toastMessage.show( "External Wallet: ${response.walletName} ");
           
 }
 
@@ -97,7 +74,7 @@ void _handleExternalWallet(ExternalWalletResponse response) {
       userId = prefs.getString('id')!;
     });
   }
-
+  var api=baseApi();
   // function to check availability
   Future<bool> checkAvailability() async {
     String uDate = _dateController.text;
@@ -105,18 +82,14 @@ void _handleExternalWallet(ExternalWalletResponse response) {
       final physioData = await physiotherapist;
       String proId = physioData['id'].toString();
       String prof_type = 'physiotherapist';
-    final response = await http.post(
-      Uri.parse('http://192.168.255.215/api/appointment.php'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
+    final response = await api.post('appointment.php', {
         'prof_id': proId,
         'profession_type': prof_type,
         'date': uDate,
         'time': uTime,
         'check_only': true,
-      }),
-    );
-    final data = jsonDecode(response.body);
+      });
+    final data = response;
     return data['available'];
   }
 
@@ -143,14 +116,7 @@ void _handleExternalWallet(ExternalWalletResponse response) {
     if(available){
       startPayment();
     }else{
-      Fluttertoast.showToast(
-            msg: "Doctor is not available at this time or Day.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+      toastMessage.show("Doctor is not available at this time or Day.");
     }
   }
 
@@ -166,9 +132,7 @@ void _handleExternalWallet(ExternalWalletResponse response) {
       String status ='pending';
       String prof_type = 'physiotherapist';
 
-      var url = Uri.parse('http://192.168.255.215/api/appointment.php');
-
-      var myData ={
+      var response= await api.post('appointment.php', {
         'user_id' : userId,
         'prof_id' :proId,
         'profession_type' : prof_type,
@@ -177,60 +141,30 @@ void _handleExternalWallet(ExternalWalletResponse response) {
         'status' :status,
         'reason' : uReason,
 
-      };
+      });
       try {
-        var response = await http.post(
-          url,
-          body: jsonEncode(myData),
-          headers: {"Content-Type": "application/json"},
-        );
 
-        var decodeData = jsonDecode(response.body);
+        var decodeData = response;
 
         if (decodeData.containsKey('success') && decodeData['success'] == true) {
-            Fluttertoast.showToast(
-            msg: decodeData['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) =>home_screen()));
+            toastMessage.show(decodeData['message']);
+          goto.gobackHome();
         } else {
-          Fluttertoast.showToast(
-            msg: "Failed to create Appointment: ${decodeData['message'] ?? 'Unknown error'}",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.black,
-            textColor: Colors.white,
-            fontSize: 16.0,
-          );
+          toastMessage.show("Failed to create Appointment: ${decodeData['message'] ?? 'Unknown error'}");
         }
       } catch (e) {
         print('Error: $e');
-        Fluttertoast.showToast(
-          msg: "Error: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+        toastMessage.show("Error: $e");
       }
   }
   }
 
   // Function to fetch doctor details
   Future<Map<String, dynamic>> fetchDoctors(String id) async {
-    final response = await http.post(
-      Uri.parse('http://192.168.255.215/api/physio_single_data.php'),
-      body: jsonEncode({'sid': id}),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
+    final response = await api.post('physio_single_data.php', {'sid':id});
+   
       try {
-        List<dynamic> jsonResponse = jsonDecode(response.body);
+        List<dynamic> jsonResponse = response;
         if (jsonResponse.isNotEmpty) {
           return jsonResponse[0];
         } else {
@@ -239,9 +173,7 @@ void _handleExternalWallet(ExternalWalletResponse response) {
       } catch (e) {
         throw Exception('Failed to parse Physiotherapist details. Response might be invalid JSON.');
       }
-    } else {
-      throw Exception('Failed to load Physiotherapist details');
-    }
+    
   }
 
 Future<void> selectDate(BuildContext context) async {
@@ -272,8 +204,7 @@ Future<void> selectDate(BuildContext context) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book Appointment',style: TextStyle(color: Colors.white)),
-        backgroundColor: Color.fromRGBO(46, 68, 176, 1),
+        title: Text('Book Appointment',),
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: physiotherapist,

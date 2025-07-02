@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:health_connect2/completed_appointments.dart';
 import 'package:health_connect2/provider_view_appointment_list.dart';
 import 'package:health_connect2/rejected_appointments.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:health_connect2/schedual_appointment.dart';
 import 'package:health_connect2/user_or_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,7 +93,7 @@ void soo(){
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => ScheduleAppointment()));
+                                  goto.openScheduleAppointment();
                                 },
                                 label: Text('Schedule'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
@@ -123,7 +124,7 @@ void soo(){
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                   Navigator.push(context, MaterialPageRoute(builder: (context) => ProviderViewAppointmentList(profId:id, proftype: proftype)));
+                                  goto.openProviderViewAppointmentList(id: id, proftype: proftype);
                                 },
                                 label: Text('Patients'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
@@ -162,7 +163,7 @@ void soo(){
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => RejectedAppointments(profId:id, proftype: proftype)));
+                                  goto.openRejectedappointment(id: id,proftype: proftype);
                                 },
                                 label: Text('Rejected'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),
@@ -194,7 +195,7 @@ void soo(){
                               ),
                               TextButton.icon(
                                 onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => CompletedAppointments(profId:id, proftype: proftype)));
+                                 goto.openCompletedAppointments(id: id, proftype: proftype);
                                 },
                                 label: Text('completed'),
                                 icon: Icon(Icons.arrow_circle_right_sharp),

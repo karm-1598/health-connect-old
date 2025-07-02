@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_connect2/lab+individual_profile.dart';
-import 'package:health_connect2/lab_book_appointment.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:health_connect2/network/commonApi_fun.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 
 class LabList extends StatefulWidget {
   const LabList({super.key});
@@ -23,33 +21,39 @@ class _LabListState extends State<LabList> {
     searchController.addListener(_searchChanged);
   }
 
+  var api=baseApi();
+
   Future<List<Map<String, dynamic>>> fetchLabs() async {
-    const url = 'http://192.168.60.215/api/lab_data.php';
+    
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        List jsonResponse = jsonDecode(response.body);
+      final response = await api.get('lab_data.php');
+        List jsonResponse = response;
         return List<Map<String, dynamic>>.from(jsonResponse);
-      } else {
-        throw Exception('Failed to load labs');
-      }
+      
     } catch (e) {
       throw Exception('Failed to load labs: $e');
     }
   }
 
   Future<List<Map<String, dynamic>>> _searchLabs(String searchValue) async {
+    
+    if (searchValue.trim().isEmpty) {
+      throw Exception('Please enter a search term');}
     try {
-      final response = await http.get(
-        Uri.parse('http://192.168.60.215/api/lab_search.php?search=$searchValue'),
-      );
-      if (response.statusCode == 200) {
-        List data = jsonDecode(response.body);
-        return data.cast<Map<String, dynamic>>();
-      } else {
-        throw Exception('Failed to search labs');
-      }
-    } catch (e) {
+      var response = await api.get('lab_search.php', queryParams: {
+        'search':searchValue
+      });
+      if (response is Map &&
+        response['status'] == true &&
+        response['results'] is List) {
+      return List<Map<String, dynamic>>.from(response['results']);
+    } else if (response is Map && response.containsKey('message')) {
+      throw Exception(response['message']);
+    } else {
+      throw Exception('Invalid response format');
+    }
+    }
+     catch (e) {
       throw Exception('Failed to search labs: $e');
     }
   }
@@ -71,6 +75,7 @@ class _LabListState extends State<LabList> {
   void dispose() {
     super.dispose();
     searchController.dispose();
+    searchController.removeListener(_searchChanged);
   }
 
   @override
@@ -179,7 +184,7 @@ class _LabListState extends State<LabList> {
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(context, MaterialPageRoute(builder:(context) =>LabBookAppointment(labId:lab['id'])));
+                                        goto.openLabBookappointment(id: lab['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1),
@@ -192,7 +197,7 @@ class _LabListState extends State<LabList> {
 
                                     ElevatedButton(
                                       onPressed: () {
-                                        Navigator.push(context, MaterialPageRoute(builder:(context) =>LabIndividualProfile(labId:lab['id'])));
+                                        goto.openLabIndividualProfile(id: lab['id']);
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(color: Color.fromRGBO(46, 68, 176, 1), width: 1 ),

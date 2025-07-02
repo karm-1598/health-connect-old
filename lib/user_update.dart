@@ -1,5 +1,5 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:health_connect2/home.dart';
+import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -70,7 +70,7 @@ class _UserUpdateState extends State<UserUpdate> {
             textColor: Colors.white,
           );
           if (mounted) {
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => home_screen()));
+            goto.gobackHome();
           }
         } else {
           Fluttertoast.showToast(
