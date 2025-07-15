@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health_connect2/config/themeData.dart';
+import 'package:health_connect2/controllers/theme_controller.dart';
 // import 'package:health_connect2/notification_services.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,11 +28,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    themeData themeController=Get.put(themeData());
+    return Obx(()=>GetMaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Project',
       theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: themeController.isDark.value ? ThemeMode.dark : ThemeMode.light,
       home: Splash(),
-    );
+    ));
   }
 }
 
@@ -79,6 +84,7 @@ class _SplashState extends State<Splash> {
           'assets/images/healthconnect_logo.png',
           height: 150,
           width: 150,
+          fit: BoxFit.cover,
         ),
       ),
     );
@@ -89,11 +95,16 @@ class _SplashState extends State<Splash> {
     bool logincheck = prefs.getBool('keepLogedIn') ?? false;
     bool logincheck2 = prefs.getBool('keepLogedIn2') ?? false;
 
+    print(logincheck);
+    print(logincheck2);
+
     if (logincheck) {
-      goto.openhome_screen();
+      goto.gobackHome();
+      print('User');
       
     } else if(logincheck2){
       goto.openProviderHome();
+      print('Provider');
     } else {
       goto.openUserOrProvider();
     }

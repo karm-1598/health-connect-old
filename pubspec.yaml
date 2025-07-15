@@ -55,6 +55,7 @@ dependencies:
   razorpay_flutter: ^1.4.0
   get: ^4.7.2
   toggle_switch: ^2.3.0
+  animated_toggle_switch: ^0.8.5
 
 dev_dependencies:
   flutter_test:

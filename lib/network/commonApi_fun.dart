@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 
 class baseApi{
-  var _baseurl='http://192.168.1.2/api/';
+  var _baseurl='http://192.168.1.12/api/';
   var client = http.Client();
 
   Future<dynamic> post(String api , dynamic body) async{
@@ -29,7 +29,9 @@ dynamic _handleResponce(http.Response response){
    if (response.statusCode == 200 ) {
       return jsonDecode(response.body);
     } else {
+      
       throw Exception(
+        
           'Failed: ${response.statusCode} - ${response.reasonPhrase}');
     }
 }

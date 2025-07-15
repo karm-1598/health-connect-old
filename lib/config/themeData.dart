@@ -7,8 +7,8 @@ var lightTheme = ThemeData(
     fillColor: lightBgColor,
     filled: true,
     prefixIconColor: lightLabelColor,
-    labelStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500),
-    hintStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500),
+    labelStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500,color: Colors.black),
+    hintStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500,color: Colors.black),
   ),
   appBarTheme: const AppBarTheme(
     titleSpacing: 1,
@@ -23,27 +23,29 @@ var lightTheme = ThemeData(
     onSurface: lightFontColor,
     primaryContainer: lightPrimaryColor,
     primary: lightPrimaryColor,
+    surfaceContainer: lightDivColor,
+    outline: lightPrimaryColor
   ),
   textTheme: const TextTheme(
       headlineLarge: TextStyle(
           fontFamily: "Questrial",
           fontSize: 24,
-          color: lightLabelColor,
+          color: lightFontColor,
           fontWeight: FontWeight.w700),
       headlineMedium: TextStyle(
           fontFamily: "Questrial",
           fontSize: 20,
-          color:lightLabelColor ,
+          color:lightFontColor ,
           fontWeight: FontWeight.w600),
       headlineSmall: TextStyle(
           fontFamily: "Questrial",
           fontSize: 15,
-          color: lightLabelColor,
+          color: lightFontColor,
           fontWeight: FontWeight.w600),
       bodyLarge: TextStyle(
           fontFamily: "Questrial",
           fontSize: 16,
-          color: lightLabelColor,
+          color: lightFontColor,
           fontWeight: FontWeight.w500),
       bodyMedium: TextStyle(
           fontFamily: "Questrial",
@@ -53,31 +55,44 @@ var lightTheme = ThemeData(
       bodySmall: TextStyle(
           fontFamily: "Questrial",
           fontSize: 13,
-          color: lightLabelColor,
+          color: lightFontColor,
           fontWeight: FontWeight.w500),
       labelSmall: TextStyle(
           fontFamily: "Questrial",
           fontSize: 13,
-          color: lightLabelColor,
+          color: lightFontColor,
           fontWeight: FontWeight.w300)),
 );
 
 // dark theme
 var darkTheme = ThemeData(
+  scaffoldBackgroundColor: darkBgColor,
   useMaterial3: true,
+  
   inputDecorationTheme: const InputDecorationTheme(
     fillColor: darkBgColor,
     filled: true,
     prefixIconColor: darkLabelColor,
-    labelStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500),
-    hintStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500),
+    labelStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500,color: darkLabelColor),
+    hintStyle: TextStyle(fontFamily: 'Questrial', fontWeight: FontWeight.w500,color: darkLabelColor),
   ),
-  colorScheme: const ColorScheme.light(
-    brightness: Brightness.light,
+  appBarTheme: const AppBarTheme(
+    titleSpacing: 1,
+    backgroundColor: darkAppbarColor,
+    foregroundColor: darkLabelColor,
+    centerTitle: true,
+    toolbarHeight: 100,
+
+  ),
+  colorScheme: const ColorScheme.dark(
+    brightness: Brightness.dark,
     surface: darkBgColor,
     onSurface: darkFontColor,
     primaryContainer: darkPrimaryColor,
     primary: darkPrimaryColor,
+    surfaceContainer: darkDivColor,
+    secondaryContainer: darkSecDivColor,
+    outline: darkAppbarColor
   ),
   textTheme: const TextTheme(
       headlineLarge: TextStyle(
