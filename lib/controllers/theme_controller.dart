@@ -8,5 +8,6 @@ class themeData extends GetxController{
   void changeTheme(){
     isDark.value = !isDark.value;
     Get.changeThemeMode(theme);
+    
   }
 }

@@ -21,11 +21,7 @@ class _CompletedAppointmentsState extends State<CompletedAppointments> {
   
 
  Future<List<Map<String, dynamic>>> getAppointments(String id, type) async {
-  // final response = await http.post(
-  //   Uri.parse('http://192.168.60.215/api/completed_appointments.php'),
-  //   body: jsonEncode({'prof_id': id, 'profession_type': type}),
-  //   headers: {"Content-Type": "application/json"},
-  // );
+  
 
   var api=baseApi();
   var complete = await api.post('completed_appointments.php', {'prof_id': id, 'profession_type': type});
@@ -53,11 +49,7 @@ class _CompletedAppointmentsState extends State<CompletedAppointments> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Completed Appointment Requests', style: TextStyle(color: Colors.white),),
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(46, 68, 176, 1),
-        ),
-      ),
+      
     ),
       body: Column(
         children: [
@@ -80,7 +72,7 @@ class _CompletedAppointmentsState extends State<CompletedAppointments> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
                         child: Card(
-                          color: Color.fromRGBO(212, 240, 232, 1),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(

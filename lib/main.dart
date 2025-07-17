@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       title: 'Project',
       theme: lightTheme,
       darkTheme: darkTheme,
-      themeMode: themeController.isDark.value ? ThemeMode.dark : ThemeMode.light,
+      themeMode: themeController.theme,
       home: Splash(),
     ));
   }

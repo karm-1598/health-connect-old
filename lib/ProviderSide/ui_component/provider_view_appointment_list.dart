@@ -108,11 +108,7 @@ class _ProviderViewAppointmentListState
         title: const Text(
           'Pending Appointment Requestt',
         ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(46, 68, 176, 1),
-          ),
-        ),
+        
       ),
       body: Column(
         children: [
@@ -135,7 +131,7 @@ class _ProviderViewAppointmentListState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10.0, vertical: 5.0),
                         child: Card(
-                          color: Color.fromRGBO(212, 240, 232, 1),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(

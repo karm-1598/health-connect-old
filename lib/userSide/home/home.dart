@@ -94,11 +94,6 @@ class _home_screenState extends State<home_screen> {
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             children: [
-
-              
-              
-
-
               SizedBox(height: 30,),
               CarouselSlider(
                 items: [
