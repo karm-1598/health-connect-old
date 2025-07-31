@@ -38,7 +38,7 @@ class goto{
   static Duration duration = const Duration(milliseconds: 500);
 
   static gobackHome(){
-    Get.off(()=> home_screen());
+    Get.offAll(()=> home_screen());
   }
 
   static openhome_screen(){
@@ -46,7 +46,7 @@ class goto{
   }
 
   static openUserOrProvider(){
-    Get.off(()=> UserOrProvider());
+    Get.offAll(()=> UserOrProvider());
   }
 
   static openUserLogin(){
@@ -128,11 +128,11 @@ class goto{
   // routes for Provider part
 
   static gobackProviderHome(){
-    Get.off(()=> ProviderHome());
+    Get.offAll(()=> ProviderHome());
   }
 
   static openProviderHome(){
-    Get.off(()=> ProviderHome());
+    Get.offAll(()=> ProviderHome());
   }
 
   static goSelectCategory(){

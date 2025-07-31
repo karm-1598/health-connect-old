@@ -47,6 +47,8 @@ class _home_screenState extends State<home_screen> {
     });
   }
 
+  
+
   Future<List<Map<String, dynamic>>> getAppointments(String uid) async {
     print(uid);
 
@@ -286,6 +288,7 @@ class _home_screenState extends State<home_screen> {
                                     Container(
                                       height: 90,
                                       width: 90,
+                                      
                                       decoration: BoxDecoration(
                                         image: DecorationImage(
                                             image: AssetImage(
@@ -299,7 +302,8 @@ class _home_screenState extends State<home_screen> {
                                       onPressed: () {
                                         goto.openPhysioList();
                                       },
-                                      label: Text('Physio..'),
+                                      
+                                      label: Text('Physiotherapist',overflow: TextOverflow.ellipsis,),
                                       icon:
                                           Icon(Icons.arrow_circle_right_sharp),
                                     ),
