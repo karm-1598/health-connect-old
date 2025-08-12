@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health_connect2/config/themeData.dart';
 import 'package:health_connect2/controllers/theme_controller.dart';
-// import 'package:health_connect2/notification_services.dart';
+import 'package:health_connect2/notification_services.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -50,18 +50,18 @@ class Splash extends StatefulWidget {
 class _SplashState extends State<Splash> {
   Timer? _timer;
 
-// NotificationServices notificationServices =NotificationServices();
+NotificationServices notificationServices =NotificationServices();
   @override
   void initState() {
     super.initState();
-    //  notificationServices.requestPermission();
-    // notificationServices.isTokenRefresh();
-    // notificationServices.getDeviceToken().then((value){
-    //   print('Device Token');
-    //   print(value);
-    // });
-    // notificationServices.firebaseInit(context);
-    // notificationServices.setupInteractMessage(context);
+     notificationServices.requestPermission();
+    notificationServices.isTokenRefresh();
+    notificationServices.getDeviceToken().then((value){
+      print('Device Token');
+      print(value);
+    });
+    notificationServices.firebaseInit(context);
+    notificationServices.setupInteractMessage(context);
     _timer = Timer(
       Duration(seconds: 2),
       getData,
