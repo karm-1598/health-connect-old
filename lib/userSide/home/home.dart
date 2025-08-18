@@ -18,11 +18,15 @@ class _home_screenState extends State<home_screen> {
   String name = '';
   String email = '';
   String id = '';
+  String imagePath='';
+  var api = baseApi();
+  bool isLoading= true;
 
   @override
   void initState() {
     super.initState();
     intial();
+    
   }
 
   Future<void> intial() async {
@@ -36,8 +40,12 @@ class _home_screenState extends State<home_screen> {
       name = prefs.getString('name')!;
       email = prefs.getString('email')!;
       id = prefs.getString('id')!;
+      
     });
+    
   }
+  
+
 
   void logout() async {
     var prefs = await SharedPreferences.getInstance();
@@ -47,12 +55,11 @@ class _home_screenState extends State<home_screen> {
     });
   }
 
-  
-
+ 
   Future<List<Map<String, dynamic>>> getAppointments(String uid) async {
     print(uid);
 
-    var api = baseApi();
+    
     var appointements = await api.post('user_pending_confirmed_appointment.php', {'user_id': uid});
 
     try {
@@ -71,7 +78,8 @@ class _home_screenState extends State<home_screen> {
     }
   }
 
-   
+     
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,70 +172,66 @@ class _home_screenState extends State<home_screen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SizedBox(
-                        height: 156,
-                        width: 130,
-                        child: Card(
-                          color: Theme.of(context).colorScheme.surfaceContainer,
-                          elevation: 5,
-                          child: Padding(
-                            padding: EdgeInsets.all(5),
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 90,
-                                  width: 90,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/doctor.png'),
-                                        fit: BoxFit.cover),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
+                      InkWell(
+                        onTap: ()=>goto.openDocList(),
+                        child: SizedBox(
+                          height: 156,
+                          width: 130,
+                          child: Card(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            elevation: 5,
+                            child: Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 90,
+                                    width: 90,
+                                    decoration:const BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/doctor.png'),
+                                          fit: BoxFit.cover),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(20)),
+                                    ),
                                   ),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    goto.openDocList();
-                                  },
-                                  label: Text('Doctors'),
-                                  icon: Icon(Icons.arrow_circle_right_sharp),
-                                )
-                              ],
+                                  SizedBox(height: 12,),
+                                  Text('Doctors', style:Theme.of(context).textTheme.titleMedium ,)
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(
-                        height: 156,
-                        width: 130,
-                        child: Card(
-                          color: Theme.of(context).colorScheme.surfaceContainer,
-                          elevation: 4,
-                          child: Padding(
-                            padding: EdgeInsets.all(5),
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 90,
-                                  width: 90,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/nurse.png'),
-                                        fit: BoxFit.cover),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
+                      InkWell(
+                        onTap: () => goto.openNurseList(),
+                        child: SizedBox(
+                          height: 156,
+                          width: 130,
+                          child: Card(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            elevation: 4,
+                            child: Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 90,
+                                    width: 90,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/nurse.png'),
+                                          fit: BoxFit.cover),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(20)),
+                                    ),
                                   ),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    goto.openNurseList();
-                                  },
-                                  label: Text('Nurses'),
-                                  icon: Icon(Icons.arrow_circle_right_sharp),
-                                )
-                              ],
+                                 SizedBox(height: 12,),
+                                  Text('Nurses', style:Theme.of(context).textTheme.titleMedium ,)
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -240,76 +244,70 @@ class _home_screenState extends State<home_screen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      SizedBox(
-                        height: 156,
-                        width: 130,
-                        child: Card(
-                          color: Theme.of(context).colorScheme.surfaceContainer,
-                          elevation: 4,
-                          child: Padding(
-                            padding: EdgeInsets.all(5),
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 90,
-                                  width: 90,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/labs.png'),
-                                        fit: BoxFit.cover),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
+                      InkWell(
+                        onTap: () => goto.openLabList(),
+                        child: SizedBox(
+                          height: 156,
+                          width: 130,
+                          child: Card(
+                            color: Theme.of(context).colorScheme.surfaceContainer,
+                            elevation: 4,
+                            child: Padding(
+                              padding: EdgeInsets.all(5),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    height: 90,
+                                    width: 90,
+                                    decoration:const BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/labs.png'),
+                                          fit: BoxFit.cover),
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(20)),
+                                    ),
                                   ),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    goto.openLabList();
-                                  },
-                                  label: Text('Labs'),
-                                  icon: Icon(Icons.arrow_circle_right_sharp),
-                                )
-                              ],
+                                  SizedBox(height: 12,),
+                                  Text('Laboratries', style:Theme.of(context).textTheme.titleMedium ,overflow: TextOverflow.ellipsis,)
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                       // jxjx
-                      SizedBox(
-                          height: 156,
-                          width: 130,
-                          child: Card(
-                              color: Theme.of(context).colorScheme.surfaceContainer,
-                              elevation: 4,
-                              child: Padding(
-                                padding: EdgeInsets.all(5),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      height: 90,
-                                      width: 90,
-                                      
-                                      decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            image: AssetImage(
-                                                'assets/images/physiotherapist.png'),
-                                            fit: BoxFit.cover),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(20)),
+                      InkWell(
+                        onTap: () => goto.openPhysioList(),
+                        child: SizedBox(
+                            height: 156,
+                            width: 130,
+                            child: Card(
+                                color: Theme.of(context).colorScheme.surfaceContainer,
+                                elevation: 4,
+                                child: Padding(
+                                  padding: EdgeInsets.all(5),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: 90,
+                                        width: 90,
+                                        
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/physiotherapist.png'),
+                                              fit: BoxFit.cover),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20)),
+                                        ),
                                       ),
-                                    ),
-                                    TextButton.icon(
-                                      onPressed: () {
-                                        goto.openPhysioList();
-                                      },
-                                      
-                                      label: Text('Physiotherapist',overflow: TextOverflow.ellipsis,),
-                                      icon:
-                                          Icon(Icons.arrow_circle_right_sharp),
-                                    ),
-                                  ],
-                                ),
-                              ))),
+                                      SizedBox(height: 12,),
+                                  Text('Physiotherapist', style:Theme.of(context).textTheme.titleMedium ,overflow: TextOverflow.ellipsis,)
+                                    ],
+                                  ),
+                                ))),
+                      ),
                     ],
                   )
                 ],
@@ -474,6 +472,7 @@ class _home_screenState extends State<home_screen> {
                   radius: 20,
                   backgroundColor: Colors.grey,
                   child: Icon(Icons.person),
+                  
                 ),
                 accountName: Text(name),
                 accountEmail: Text(email),

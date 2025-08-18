@@ -24,7 +24,7 @@ var lightTheme = ThemeData(
     primaryContainer: lightPrimaryColor,
     primary: lightPrimaryColor,
     surfaceContainer: lightDivColor,
-    outline: lightPrimaryColor
+    outline: Color.fromARGB(171, 15, 25, 77)
   ),
   textTheme: const TextTheme(
       headlineLarge: TextStyle(
@@ -92,7 +92,7 @@ var darkTheme = ThemeData(
     primary: darkPrimaryColor,
     surfaceContainer: darkDivColor,
     secondaryContainer: darkSecDivColor,
-    outline: darkAppbarColor
+    outline: Color.fromARGB(156, 36, 63, 243)
   ),
   textTheme: const TextTheme(
       headlineLarge: TextStyle(

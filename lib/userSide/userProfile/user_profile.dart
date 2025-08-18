@@ -5,6 +5,7 @@ import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as p;
 
 class UserProfile extends StatefulWidget {
   final String studentId;
@@ -17,8 +18,9 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> {
   late Future<Map<String, dynamic>> users;
   XFile? imageFile;
-  String? imagePathe;
+  String? imagePath;
   final ImagePicker picker = ImagePicker();
+  bool isLoading= false;
   var api = baseApi();
 
   Future<void> getImageFromGallery() async {
@@ -26,7 +28,7 @@ class _UserProfileState extends State<UserProfile> {
     if (pickedFile != null) {
       setState(() {
         imageFile = pickedFile;
-        imagePathe = pickedFile.path;
+        imagePath = pickedFile.path;
       });
     }
     uploadImage(imageFile!, widget.studentId);
@@ -37,43 +39,78 @@ class _UserProfileState extends State<UserProfile> {
     if (pickedFile != null) {
       setState(() {
         imageFile = pickedFile;
-        imagePathe = pickedFile.path;
+        imagePath = pickedFile.path;
       });
     }
     uploadImage(imageFile!, widget.studentId);
   }
 
+  Future<void> fetchImage() async{
+    setState(() {
+      isLoading = true;
+    });
+    try{
+    var fetchformdata=FormData.fromMap({
+      'user_id':widget.studentId.toString(),
+      'action':'get'
+    });
+    final responsee= await api.post('user_profile_photo.php', fetchformdata);
+
+    
+      if(responsee['status']==200){
+      setState(() {
+        // ignore: prefer_interpolation_to_compose_strings
+        imagePath ='http://192.168.1.9/api/'+responsee['photo_url'];
+      });
+      print('->->->->->->->->->->->->->->$imagePath<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-');
+    }else{
+      setState(() {
+        imagePath=null;
+      });
+    }
+    } catch(e){
+      print('++++++++++++++++++$e++++++++++++++++++++++++++++++++++++++++');
+    }finally{
+      setState(() {
+      isLoading=false;
+    });
+    }
+
+    
+  }
+
+  ImageProvider? _getImageProvider() {
+  if (imageFile != null) {
+    return FileImage(File(imageFile!.path));
+  } else if (imagePath != null && imagePath!.isNotEmpty) {
+    if (imagePath!.startsWith('http')) {
+      return NetworkImage(imagePath!);
+    } else if (File(imagePath!).existsSync()) {
+      return FileImage(File(imagePath!));
+    }
+  }
+  return null;
+}
+
   Future<void> uploadImage(XFile uploadImage, String userId) async {
+    String ext = p.extension(imagePath!);
     final formData = FormData.fromMap({
       'user_id': userId,
       'action': 'upload',
       'photo': await MultipartFile.fromFile(uploadImage.path,
-          filename: 'profile_photo_$userId.jpg')
+          filename: 'profile_photo_$userId$ext')
     });
     final response = await api.post('user_profile_photo.php', formData);
     if (response['status'] == 200) {
-      String imageurl= response.data['photo_url'];
-
-      final prefs= await SharedPreferences.getInstance();
-      prefs.setString('imageUrl', imageurl);
+      fetchImage();
     }
   }
-
-Future<String> getImageUrl() async {
-  final prefs = await SharedPreferences.getInstance();
-  final url = prefs.getString('imageUrl') ?? '';
-  setState(() {
-    imagePathe = url;
-  });
-  return url;
-}
-
 
   @override
   void initState() {
     super.initState();
     users = fetchUsers(widget.studentId);
-    getImageUrl();
+    fetchImage();
   }
 
   Future<Map<String, dynamic>> fetchUsers(String id) async {
@@ -154,46 +191,63 @@ Future<String> getImageUrl() async {
                         child: InkWell(
                           onTap: () {
                             showBottomSheet(
+                              constraints: BoxConstraints.expand(width: 400,height: 300),
+                              backgroundColor: Theme.of(context).colorScheme.outline,
+                              enableDrag: true,
+                              showDragHandle: true,
                                 context: context,
                                 builder: (context) {
-                                  return Row(
-                                    children: [
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          getImageFromGallery();
-                                        },
-                                        label: Text('Gallery'),
-                                        icon: Icon(Icons.browse_gallery),
-                                      ),
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          getImageFromCamera();
-                                        },
-                                        label: Text('Camera'),
-                                        icon: Icon(Icons.camera_alt),
-                                      )
-                                    ],
+                                  return Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: Column(
+                                      
+                                      children: [
+                                        ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10)),
+                                            minimumSize: const Size(double.infinity, 50),
+                                          ),
+                                          onPressed: () {
+                                            getImageFromGallery();
+                                          },
+                                          label: Text('Choose from Gallery'),
+                                          icon: Icon(Icons.browse_gallery),
+                                        ),
+                                        SizedBox(height: 20,),
+                                        ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(10)),
+                                            minimumSize: const Size(double.infinity, 50),
+                                          ),
+                                          onPressed: () {getImageFromCamera();},
+                                          label: Text('Click from Camera'),
+                                          icon: Icon(Icons.camera_alt),
+                                        )
+                                      ],
+                                    ),
                                   );
                                 });
                           },
                           child: Stack(children: [
                             CircleAvatar(
                               radius: 50,
-                              backgroundImage: imageFile != null
-                                  ? FileImage(File(imagePathe!))
-                                  : (imagePathe !=null? NetworkImage(imagePathe!): null),
-                              child: imageFile == null && imagePathe == null
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.grey.shade600,
-                                    )
-                                  : null,
+                              backgroundImage:isLoading?null: _getImageProvider(),
+                              child: (!isLoading && _getImageProvider()==null)?
+                              Icon(Icons.person, size: 50, color: Colors.grey[600],):null,
                             ),
                             Positioned(
                                 bottom: 10,
                                 right: 4,
-                                child: Icon(Icons.add_a_photo))
+                                child: Icon(Icons.add_a_photo)),
+                              if(isLoading)
+                                Positioned.fill(child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.outline,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                  child: Center(child: CircularProgressIndicator(strokeWidth: 3, valueColor: AlwaysStoppedAnimation(Colors.white),),),
+                                ))
+                              
                           ]),
                         ),
                       ),
