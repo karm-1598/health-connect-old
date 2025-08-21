@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+
 
 class DocList extends StatefulWidget {
   const DocList({super.key});
@@ -11,14 +14,18 @@ class DocList extends StatefulWidget {
 
 class _DocListState extends State<DocList> {
   late Future<List<Map<String, dynamic>>> doctors;
-  final searchController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
   bool isSearching = false;
+  bool isAvailabel= false;
+  final SpeechToText _speechToText= SpeechToText();
+  bool startRecord =false;
 
   @override
   void initState() {
     super.initState();
     doctors = fetchDocs();
     searchController.addListener(_searchChanged);
+    speechText();
   }
 
   Future<List<Map<String, dynamic>>> fetchDocs() async {
@@ -34,6 +41,13 @@ class _DocListState extends State<DocList> {
     } catch (e) {
       throw Exception('Failed to load doctors: $e');
     }
+  }
+
+  void speechText() async{
+    isAvailabel= await _speechToText.initialize();
+    setState(() {
+      
+    });
   }
 
   Future<List<Map<String, dynamic>>> _searchDoctors(String searchValue) async {
@@ -74,6 +88,10 @@ class _DocListState extends State<DocList> {
     searchController.removeListener(_searchChanged);
   }
 
+  void dialogBox(){
+    return dialogBox();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,19 +99,48 @@ class _DocListState extends State<DocList> {
         
         title: isSearching
             ? TextField(
+                
                 style: Theme.of(context).textTheme.bodyMedium,
                 controller: searchController,
                 decoration: InputDecoration(
                   hintText: 'Search',
                   hintStyle: TextStyle(color: Colors.white),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      searchController.clear();
-                      setState(() {
-                        isSearching = false;
-                      });
-                    },
-                    icon: Icon(Icons.close, color: Colors.white),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTapDown: (details) {
+                          setState(() {
+                            isSearching=true;
+                          });if(isAvailabel){
+                            _speechToText.listen(
+                              onResult: (value){
+                                searchController.text=value.recognizedWords;
+                              }
+                            );
+                          }
+                        },
+                        onTapUp: (details) {
+                          setState(() {
+                            isSearching=false;
+                          });
+                          _speechToText.stop();
+                        },
+                        child: Container(
+                          child: Icon(Icons.mic),
+                        ),
+                      ),
+                    
+                      IconButton(
+                        onPressed: () {
+                          searchController.clear();
+                          setState(() {
+                            isSearching = false;
+                          });
+                        },
+                        icon: Icon(Icons.close, color: Colors.black),
+                      ),
+                      ],
                   ),
                 ),
               )

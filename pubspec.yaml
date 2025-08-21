@@ -58,6 +58,8 @@ dependencies:
   animated_toggle_switch: ^0.8.5
   dio: ^5.8.0+1
   path: ^1.9.1
+  google_maps_flutter: ^2.12.3
+  speech_to_text: ^7.3.0
 
 dev_dependencies:
   flutter_test:

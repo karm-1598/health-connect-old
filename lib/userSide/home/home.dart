@@ -229,7 +229,8 @@ class _home_screenState extends State<home_screen> {
                                     ),
                                   ),
                                  SizedBox(height: 12,),
-                                  Text('Nurses', style:Theme.of(context).textTheme.titleMedium ,)
+                                  Text('Nurses', style:Theme.of(context).textTheme.titleMedium ,),
+                                  
                                 ],
                               ),
                             ),
