@@ -60,6 +60,7 @@ dependencies:
   path: ^1.9.1
   google_maps_flutter: ^2.12.3
   speech_to_text: ^7.3.0
+  avatar_glow: ^3.0.1
 
 dev_dependencies:
   flutter_test:

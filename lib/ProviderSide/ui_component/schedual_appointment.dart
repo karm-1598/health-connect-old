@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
@@ -56,7 +58,14 @@ class _ScheduleAppointmentState extends State<ScheduleAppointment> {
       });
 
       try {
-        var decodeData = response;
+        Map<String, dynamic> decodeData;
+        if(response is String){
+          decodeData = json.decode(response);
+        }else if(response is Map<String, dynamic>){
+          decodeData = response;
+        }else{
+          throw Exception('Unexpected response type: ${response.runtimeType}');
+        }
 
         if (decodeData['success'] == true) {
           setState(() {});

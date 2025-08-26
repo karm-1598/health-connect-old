@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-
+import 'package:health_connect2/widgets/speechToText.dart';
 
 class DocList extends StatefulWidget {
   const DocList({super.key});
@@ -16,16 +14,12 @@ class _DocListState extends State<DocList> {
   late Future<List<Map<String, dynamic>>> doctors;
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
-  bool isAvailabel= false;
-  final SpeechToText _speechToText= SpeechToText();
-  bool startRecord =false;
 
   @override
   void initState() {
     super.initState();
     doctors = fetchDocs();
     searchController.addListener(_searchChanged);
-    speechText();
   }
 
   Future<List<Map<String, dynamic>>> fetchDocs() async {
@@ -41,13 +35,6 @@ class _DocListState extends State<DocList> {
     } catch (e) {
       throw Exception('Failed to load doctors: $e');
     }
-  }
-
-  void speechText() async{
-    isAvailabel= await _speechToText.initialize();
-    setState(() {
-      
-    });
   }
 
   Future<List<Map<String, dynamic>>> _searchDoctors(String searchValue) async {
@@ -88,7 +75,7 @@ class _DocListState extends State<DocList> {
     searchController.removeListener(_searchChanged);
   }
 
-  void dialogBox(){
+  void dialogBox() {
     return dialogBox();
   }
 
@@ -96,10 +83,8 @@ class _DocListState extends State<DocList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
         title: isSearching
             ? TextField(
-                
                 style: Theme.of(context).textTheme.bodyMedium,
                 controller: searchController,
                 decoration: InputDecoration(
@@ -108,29 +93,9 @@ class _DocListState extends State<DocList> {
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      GestureDetector(
-                        onTapDown: (details) {
-                          setState(() {
-                            isSearching=true;
-                          });if(isAvailabel){
-                            _speechToText.listen(
-                              onResult: (value){
-                                searchController.text=value.recognizedWords;
-                              }
-                            );
-                          }
-                        },
-                        onTapUp: (details) {
-                          setState(() {
-                            isSearching=false;
-                          });
-                          _speechToText.stop();
-                        },
-                        child: Container(
-                          child: Icon(Icons.mic),
-                        ),
-                      ),
-                    
+                      Speechtotext(onResult: (text) {
+                        searchController.text = text;
+                      }),
                       IconButton(
                         onPressed: () {
                           searchController.clear();
@@ -140,7 +105,7 @@ class _DocListState extends State<DocList> {
                         },
                         icon: Icon(Icons.close, color: Colors.black),
                       ),
-                      ],
+                    ],
                   ),
                 ),
               )
@@ -165,6 +130,35 @@ class _DocListState extends State<DocList> {
       ),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              InkWell(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent
+                  ),
+                  height: 50,
+                  width: MediaQuery.of(context).size.width * .5,
+                  child: Center(
+                    child: Text('Filter'),
+                  ),
+                ),
+              ),
+              InkWell(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 255, 143, 68)
+                  ),
+                  width: MediaQuery.of(context).size.width * .5,
+                  height: 50,
+                  child: Center(
+                    child: Text('Sort'),
+                  ),
+                ),
+              ),
+            ],
+          ),
           Expanded(
             child: FutureBuilder<List<Map<String, dynamic>>>(
               future: doctors,
@@ -251,8 +245,9 @@ class _DocListState extends State<DocList> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(
-                                            color:
-                                                Theme.of(context).colorScheme.outline,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline,
                                             width: 1),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
@@ -268,7 +263,9 @@ class _DocListState extends State<DocList> {
                                       },
                                       style: ElevatedButton.styleFrom(
                                         side: BorderSide(
-                                            color:Theme.of(context).colorScheme.outline,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .outline,
                                             width: 1),
                                         shape: RoundedRectangleBorder(
                                           borderRadius:

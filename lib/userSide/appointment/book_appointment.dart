@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
@@ -78,11 +80,26 @@ class _BookAppointmentState extends State<BookAppointment> {
     try {
       String uDate = _dateController.text;
       String uTime = _timeController.text;
+      String time24;
+      try{if (uTime.toLowerCase().contains("am") || uTime.toLowerCase().contains("pm")) {
+        // Parse 12-hour format (e.g., "2:00 PM")
+        final inputFormat = DateFormat.jm(); // Parses "2:00 PM"
+        final parsedTime = inputFormat.parse(uTime);
+        final outputFormat = DateFormat('HH:mm:ss'); // Outputs "14:00:00"
+        time24 = outputFormat.format(parsedTime);
+      } else {
+        // Assume it's already in 24-hour format, just add seconds
+        time24 = "$uTime:00";
+      }
+    } catch (e) {
+      print("Time parsing error: $e");
+      // Fallback: try to parse as is
+      time24 = uTime;
+    }
 
-      // Convert time to 24-hour format
-      final inputFormat = DateFormat.jm(); // e.g., 2:00 PM
-      final outputFormat = DateFormat.Hm(); // e.g., 14:00
-      final time24 = outputFormat.format(inputFormat.parse(uTime));
+
+
+      
 
       final doctorData = await doctors;
       String proId = doctorData['id'].toString();
@@ -95,10 +112,20 @@ class _BookAppointmentState extends State<BookAppointment> {
         'profession_type': prof_type,
         'date': uDate,
         'time': time24,
-        'check_only': true
+        'check_only': 'true'
       });
 
-      final data = checkAvailability;
+      Map<String, dynamic>data;
+      if(checkAvailability is String){
+        data = json.decode(checkAvailability);
+      }else if(checkAvailability is Map<String, dynamic>){
+        data= checkAvailability;
+      }else{
+        print("Unexpected response type: ${checkAvailability.runtimeType}");
+      return false;
+      }
+
+      print("Availability check response: $data");
 
       if (data['success'] == true) {
         return data['available'];
