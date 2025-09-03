@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
 import 'package:health_connect2/routes/app_navigator.dart';
+import 'package:health_connect2/userSide/home/googlemap.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:health_connect2/controllers/theme_controller.dart';
 
@@ -529,7 +530,15 @@ class _home_screenState extends State<home_screen> {
               onTap: () {
                 logout();
               },
-            )
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: Text('Google Map'),
+              onTap: (){
+                Get.to(()=>Googlemap());
+              },
+            ),
+           
           ],
         ),
       ),

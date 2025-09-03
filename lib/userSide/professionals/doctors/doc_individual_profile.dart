@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:health_connect2/network/commonApi_fun.dart';
-import 'package:health_connect2/routes/app_navigator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DocIndividualProfile extends StatefulWidget {
@@ -55,96 +56,150 @@ class _DocIndividualProfileState extends State<DocIndividualProfile> {
 
   // Function to fetch reviews for the specific doctor
   Future<List<Map<String, dynamic>>> fetchReview(String docId) async {
-    // final url = 'http://192.168.60.215/api/doc_get_review.php'; 
-    try {
-    var api=baseApi();
-    var response= await api.post('doc_get_review.php', {'docId':docId});
+  try {
+    var api = baseApi();
+    var response = await api.post('doc_get_review.php', {'docId': docId});
 
-      
-        final jsonResponse = response;
+    print("Raw response: $response"); // Debugging
 
-        if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
-          List<dynamic> reviews = jsonResponse['reviews']; // This is a list of reviews
+    // Ensure the response is parsed into a Map
+    final jsonResponse = jsonDecode(response);
 
-          if (reviews.isEmpty) {
-            return [];
-          }
+    if (jsonResponse is Map && jsonResponse.containsKey('reviews')) {
+      List<dynamic> reviews = jsonResponse['reviews'];
 
-          return List<Map<String, dynamic>>.from(reviews);
-        } else {
-          return [];
-        }
-      
-    } catch (e) {
-      throw Exception('Failed to load reviews: $e');
+      if (reviews.isEmpty) {
+        return [];
+      }
+
+      return List<Map<String, dynamic>>.from(reviews);
+    } else {
+      return [];
     }
+  } catch (e) {
+    throw Exception('Failed to load reviews: $e');
   }
-
+}
   // Function to add a review and refresh the reviews list
-  void reviewAdd() async {
+ void reviewAdd() async {
+  try {
+    var api = baseApi();
     
-    var api=baseApi();
-    var addReview= await api.post('doc_add_review.php', {
-        'docId': widget.docId,
-        'name': name,
-        'review_text': reviewController.text,
-      });
-     
+    print('Sending review request...');
+    print('docId: ${widget.docId}');
+    print('name: $name');
+    print('review_text: ${reviewController.text}');
+    
+    var addReview = await api.post('doc_add_review.php', {
+      'docId': widget.docId,
+      'name': name,
+      'review_text': reviewController.text,
+    });
 
-    if (addReview['status']==true) {
+    print('Raw API response: $addReview');
+    print('Response type: ${addReview.runtimeType}');
+
+    // Handle different response types
+    Map<String, dynamic>? responseData;
+    
+    if (addReview is Map<String, dynamic>) {
+      responseData = addReview;
+    } else if (addReview is String) {
       try {
-        var jsonResponse = addReview;
-        if (jsonResponse['message'] == 'Review added successfully') {
+        responseData = jsonDecode(addReview);
+      } catch (e) {
+        print('Failed to parse JSON response: $e');
+        print('Response content: $addReview');
+        _showErrorDialog('Server returned invalid response format');
+        return;
+      }
+    } else {
+      print('Unexpected response type: ${addReview.runtimeType}');
+      _showErrorDialog('Unexpected response format from server');
+      return;
+    }
+
+    print('Parsed response: $responseData');
+
+    // Check if response has status field
+    if (responseData != null && responseData.containsKey('status')) {
+      if (responseData['status'] == true) {
+        // Success case
+        print('Review added successfully');
+
+        // Clear the text field and hide it
+        reviewController.clear();
+        setState(() {
+          _isTextFieldVisible = false;
+        });
+
+        // Refresh the reviews list
+        setState(() {
+          reviews = fetchReview(widget.docId);
+        });
+      } else {
+        // Server returned status: false
+        print('Server error: ${responseData['message']}');
+        _showErrorDialog(responseData['message'] ?? 'Failed to add review');
+      }
+    } else {
+      // Response doesn't have status field (legacy format)
+      print('Response missing status field, checking for message...');
+      
+      if (responseData != null && responseData.containsKey('message')) {
+        if (responseData['message'] == 'Review added successfully') {
+          // Success case for legacy format
+          print('Review added successfully (legacy format)');
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Review added successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
           reviewController.clear();
           setState(() {
             _isTextFieldVisible = false;
           });
 
-          // After review is added, refresh the reviews list
           setState(() {
-            reviews = fetchReview(widget.docId); // Reload reviews from the server
+            reviews = fetchReview(widget.docId);
           });
         } else {
-          print('Error: ${jsonResponse['message']}');
+          // Error case for legacy format
+          print('Error: ${responseData['message']}');
+          _showErrorDialog(responseData['message']);
         }
-      } catch (e) {
-        print('Error parsing JSON response: $e');
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to parse the server response. It may be an HTML page or invalid JSON.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
+      } else {
+        _showErrorDialog('Invalid response format from server');
       }
-    } else {
-      print('Failed to submit review');
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('Failed to submit review. Please try again later.'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                goto.gobackHome();
-              },
-            ),
-          ],
-        ),
-      );
     }
-  }
 
+  } catch (e) {
+    print('Exception in reviewAdd: $e');
+    print('Exception type: ${e.runtimeType}');
+    _showErrorDialog('Network error: ${e.toString()}');
+  }
+}
+
+void _showErrorDialog(String message) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Error'),
+      content: Text(message),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('OK'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

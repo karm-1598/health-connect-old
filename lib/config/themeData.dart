@@ -92,6 +92,7 @@ var darkTheme = ThemeData(
     primary: darkPrimaryColor,
     surfaceContainer: darkDivColor,
     secondaryContainer: darkSecDivColor,
+    onPrimary: darkSecDivColor,
     outline: Color.fromARGB(156, 36, 63, 243)
   ),
   textTheme: const TextTheme(

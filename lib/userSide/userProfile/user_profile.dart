@@ -60,7 +60,7 @@ class _UserProfileState extends State<UserProfile> {
       if(responsee['status']==200){
       setState(() {
         // ignore: prefer_interpolation_to_compose_strings
-        imagePath ='http://192.168.1.22/api/'+responsee['photo_url'];
+        imagePath ='http://192.168.1.10/api/'+responsee['photo_url'];
       });
       print('->->->->->->->->->->->->->->$imagePath<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-');
     }else{
@@ -149,6 +149,7 @@ class _UserProfileState extends State<UserProfile> {
       goto.openUserLogin();
     });
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +191,7 @@ class _UserProfileState extends State<UserProfile> {
                     children: [
                       Center(
                         child: InkWell(
+                          
                           onTap: () {
                             showBottomSheet(
                               constraints: BoxConstraints.expand(width: 400,height: 300),
@@ -232,6 +234,7 @@ class _UserProfileState extends State<UserProfile> {
                           child: Stack(children: [
                             CircleAvatar(
                               radius: 50,
+                              backgroundColor:isLoading?Colors.transparent :Theme.of(context).inputDecorationTheme.fillColor,
                               backgroundImage:isLoading?null: _getImageProvider(),
                               child: (!isLoading && _getImageProvider()==null)?
                               Icon(Icons.person, size: 50, color: Colors.grey[600],):null,
@@ -239,7 +242,7 @@ class _UserProfileState extends State<UserProfile> {
                             Positioned(
                                 bottom: 10,
                                 right: 4,
-                                child: Icon(Icons.add_a_photo)),
+                                child: Icon(Icons.add_a_photo_rounded)),
                               if(isLoading)
                                 Positioned.fill(child: Container(
                                   decoration: BoxDecoration(

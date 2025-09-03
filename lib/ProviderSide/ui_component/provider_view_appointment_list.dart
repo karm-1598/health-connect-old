@@ -28,25 +28,27 @@ class _ProviderViewAppointmentListState
   }
 
   var api = baseApi();
+  
   Future<List<Map<String, dynamic>>> getAppointments(String id, type) async {
-    var response = await api.post(
-        'provider_view_appointment.php', {'prof_id': id, 'profession_type': type});
-
     try {
-      var jsonResponse = response;
+      var response = await api.post(
+          'provider_view_appointment.php', {'prof_id': id, 'profession_type': type});
 
-      print('Response: $jsonResponse'); // Debugging Step
+      print('Response: $response'); // Debugging Step
 
-      if (jsonResponse['status'] == true &&
-          jsonResponse['appointments'] is List) {
-        return List<Map<String, dynamic>>.from(jsonResponse['appointments']);
+      // Check if response is valid and has the expected structure
+      if (response != null && response is Map<String, dynamic>) {
+        if (response['status'] == true && response['appointments'] is List) {
+          return List<Map<String, dynamic>>.from(response['appointments']);
+        } else {
+          throw Exception(response['message'] ?? 'No Appointments found');
+        }
       } else {
-        throw Exception(jsonResponse['message'] ?? 'No Appointments found');
+        throw Exception('Invalid response format from server');
       }
     } catch (e) {
-      print('Error: $e'); // Debugging Step
-      throw Exception(
-          'Failed to parse Appointment details. Response might be invalid JSON.');
+      print('Error in getAppointments: $e'); // Debugging Step
+      throw Exception('Failed to load appointments: ${e.toString()}');
     }
   }
 
@@ -54,25 +56,36 @@ class _ProviderViewAppointmentListState
     String reason = rejectReasonController.text;
     String uid = uuid;
 
-    var response = await api.post('delete_appointment.php', {
-      'id': uid,
-      'reason': reason,
-    });
-    try {
-      var decodedData = response;
+    if (reason.trim().isEmpty) {
+      toastMessage.show("Please provide a reason for rejection");
+      return;
+    }
 
-      if (decodedData['status'] == true) {
-        toastMessage.show(decodedData['data']);
-        if (mounted) {
-          setState(() {
-            appointments = getAppointments(widget.profId, widget.proftype);
-          });
+    try {
+      var response = await api.post('delete_appointment.php', {
+        'id': uid,
+        'reason': reason,
+      });
+
+      print('Reject response: $response'); // Debug log
+
+      if (response != null && response is Map<String, dynamic>) {
+        if (response['status'] == true) {
+          toastMessage.show(response['data'] ?? 'Appointment rejected successfully');
+          if (mounted) {
+            setState(() {
+              appointments = getAppointments(widget.profId, widget.proftype);
+            });
+          }
+        } else {
+          toastMessage.show("Update failed: ${response['message'] ?? 'Unknown error'}");
         }
       } else {
-        toastMessage.show("Update failed: ${decodedData['message']}");
+        toastMessage.show("Invalid response from server");
       }
     } catch (e) {
-      toastMessage.show("Error: $e");
+      print('Error in rejectAppointment: $e'); // Debug log
+      toastMessage.show("Error: ${e.toString()}");
     }
   }
 
@@ -80,24 +93,30 @@ class _ProviderViewAppointmentListState
     String uid = uuid;
 
     try {
-      var response = await api
-          .post('update_appointement_status.php', {'appointment_id': uid});
+      var response = await api.post('update_appointment_status.php', {
+        'appointment_id': uid
+      });
 
-      var decodedData = response;
+      print('Complete appointment response: $response'); // Debug log
 
-      if (decodedData['status'] == true) {
-        toastMessage.show(decodedData['message']);
-        if (mounted) {
-          setState(() {
-            appointments = getAppointments(widget.profId, widget.proftype);
-          });
+      if (response != null && response is Map<String, dynamic>) {
+        if (response['status'] == true) {
+          toastMessage.show(response['message'] ?? 'Appointment updated successfully');
+          if (mounted) {
+            setState(() {
+              appointments = getAppointments(widget.profId, widget.proftype);
+            });
+          }
+          goto.openProviderHome();
+        } else {
+          toastMessage.show("Update failed: ${response['message'] ?? 'Unknown error'}");
         }
-        goto.openProviderHome();
       } else {
-        toastMessage.show("Update failed: ${decodedData['message']}");
+        toastMessage.show("Invalid response from server");
       }
     } catch (e) {
-      toastMessage.show("Error: $e");
+      print('Error in completeAppointment: $e'); // Debug log
+      toastMessage.show("Error: ${e.toString()}");
     }
   }
 
@@ -106,9 +125,8 @@ class _ProviderViewAppointmentListState
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Pending Appointment Requestt',
+          'Pending Appointment Request',
         ),
-        
       ),
       body: Column(
         children: [
@@ -119,7 +137,23 @@ class _ProviderViewAppointmentListState
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              appointments = getAppointments(widget.profId, widget.proftype);
+                            });
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No Appointments found'));
                 } else {
@@ -154,15 +188,13 @@ class _ProviderViewAppointmentListState
                                           Text.rich(
                                             TextSpan(
                                               text: 'Patient: ',
-                                              style: TextStyle(fontSize: 16),
+                                              style: const TextStyle(fontSize: 16),
                                               children: [
                                                 TextSpan(
-                                                  text:
-                                                      '${appointment['user_name']} ',
+                                                  text: '${appointment['user_name'] ?? 'Unknown'} ',
                                                   style: const TextStyle(
                                                       fontSize: 17,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                      fontWeight: FontWeight.bold),
                                                 ),
                                               ],
                                             ),
@@ -171,15 +203,13 @@ class _ProviderViewAppointmentListState
                                           Text.rich(
                                             TextSpan(
                                               text: 'Reason: ',
-                                              style: TextStyle(fontSize: 16),
+                                              style: const TextStyle(fontSize: 16),
                                               children: [
                                                 TextSpan(
-                                                  text:
-                                                      '${appointment['reason']}',
+                                                  text: '${appointment['reason'] ?? 'Not specified'}',
                                                   style: const TextStyle(
                                                       fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                      fontWeight: FontWeight.bold),
                                                 ),
                                               ],
                                             ),
@@ -188,15 +218,13 @@ class _ProviderViewAppointmentListState
                                           Text.rich(
                                             TextSpan(
                                               text: 'Status: ',
-                                              style: TextStyle(fontSize: 16),
+                                              style: const TextStyle(fontSize: 16),
                                               children: [
                                                 TextSpan(
-                                                  text:
-                                                      '${appointment['status']}',
+                                                  text: '${appointment['status'] ?? 'Unknown'}',
                                                   style: const TextStyle(
                                                       fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                                      fontWeight: FontWeight.bold),
                                                 ),
                                               ],
                                             ),
@@ -211,11 +239,10 @@ class _ProviderViewAppointmentListState
                                 Text.rich(
                                   TextSpan(
                                     text: 'Booked on: ',
-                                    style: TextStyle(fontSize: 16),
+                                    style: const TextStyle(fontSize: 16),
                                     children: [
                                       TextSpan(
-                                        text:
-                                            '${appointment['date']} at ${appointment['time']}',
+                                        text: '${appointment['date'] ?? 'Unknown'} at ${appointment['time'] ?? 'Unknown'}',
                                         style: const TextStyle(
                                             fontSize: 17,
                                             fontWeight: FontWeight.bold),
@@ -225,8 +252,7 @@ class _ProviderViewAppointmentListState
                                 ),
                                 const SizedBox(height: 16),
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
@@ -234,29 +260,30 @@ class _ProviderViewAppointmentListState
                                           context: context,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
-                                              title:
-                                                  Text('Confirm Your Actions'),
+                                              title: const Text('Confirm Your Action'),
                                               content: Text(
-                                                'Are you sure you want to ${appointment['status'] == 'confirmed' ? 'Complete' : 'Confirm'} this appointment ?',
-                                                style: TextStyle(fontSize: 16),
+                                                'Are you sure you want to ${appointment['status'] == 'confirmed' ? 'Complete' : 'Confirm'} this appointment?',
+                                                style: const TextStyle(fontSize: 16),
                                               ),
                                               actions: <Widget>[
                                                 TextButton(
                                                   onPressed: () {
                                                     Navigator.of(context).pop();
                                                   },
-                                                  child: Text('Cancel'),
+                                                  child: const Text('Cancel'),
                                                 ),
                                                 ElevatedButton(
                                                   onPressed: () {
-                                                    uuid = appointment[
-                                                            'appointment_id']
-                                                        .toString();
-                                                    appointmentStatus =
-                                                        appointment['status'];
-                                                    completeAppointment();
+                                                    Navigator.of(context).pop();
+                                                    uuid = appointment['appointment_id']?.toString() ?? '';
+                                                    appointmentStatus = appointment['status'] ?? '';
+                                                    if (uuid.isNotEmpty) {
+                                                      completeAppointment();
+                                                    } else {
+                                                      toastMessage.show("Invalid appointment ID");
+                                                    }
                                                   },
-                                                  child: Text('Submit'),
+                                                  child: const Text('Submit'),
                                                 ),
                                               ],
                                             );
@@ -264,13 +291,11 @@ class _ProviderViewAppointmentListState
                                         );
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        side: BorderSide(
-                                            color:
-                                                Color.fromRGBO(46, 68, 176, 1),
+                                        side: const BorderSide(
+                                            color: Color.fromRGBO(46, 68, 176, 1),
                                             width: 1),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              10), // Circular border radius
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
                                       child: Text(
@@ -280,41 +305,39 @@ class _ProviderViewAppointmentListState
                                     ),
                                     ElevatedButton(
                                       onPressed: () {
-                                        uuid = appointment['appointment_id']
-                                            .toString();
-                                        // Show a dialog to ask for the reason
+                                        uuid = appointment['appointment_id']?.toString() ?? '';
+                                        if (uuid.isEmpty) {
+                                          toastMessage.show("Invalid appointment ID");
+                                          return;
+                                        }
+                                        
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
                                             return AlertDialog(
-                                              title:
-                                                  Text('Reason for Rejection'),
+                                              title: const Text('Reason for Rejection'),
                                               content: TextFormField(
-                                                controller:
-                                                    rejectReasonController,
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText:
-                                                      'Reason for Rejection',
+                                                controller: rejectReasonController,
+                                                decoration: const InputDecoration(
+                                                  labelText: 'Reason for Rejection',
+                                                  hintText: 'Please provide a reason...',
                                                 ),
+                                                maxLines: 3,
                                               ),
                                               actions: <Widget>[
                                                 TextButton(
                                                   onPressed: () {
-                                                    Navigator.of(context)
-                                                        .pop(); // Close the dialog
+                                                    Navigator.of(context).pop();
                                                   },
-                                                  child: Text('Cancel'),
+                                                  child: const Text('Cancel'),
                                                 ),
                                                 ElevatedButton(
                                                   onPressed: () {
+                                                    Navigator.of(context).pop();
                                                     rejectAppointment();
-                                                    rejectReasonController
-                                                        .clear();
-                                                    Navigator.of(context)
-                                                        .pop(); // Close the dialog
+                                                    rejectReasonController.clear();
                                                   },
-                                                  child: Text('Submit'),
+                                                  child: const Text('Submit'),
                                                 ),
                                               ],
                                             );
@@ -322,16 +345,14 @@ class _ProviderViewAppointmentListState
                                         );
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        side: BorderSide(
-                                            color:
-                                                Color.fromRGBO(46, 68, 176, 1),
+                                        side: const BorderSide(
+                                            color: Color.fromRGBO(46, 68, 176, 1),
                                             width: 1),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
-                                      child: Text('Reject'),
+                                      child: const Text('Reject'),
                                     ),
                                   ],
                                 )

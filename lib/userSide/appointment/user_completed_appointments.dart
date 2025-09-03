@@ -48,7 +48,7 @@ class _UserCompletedAppointmentsState extends State<UserCompletedAppointments> {
     } catch (e) {
       print('Error: $e');
       throw Exception(
-          'Failed to parse Completed Appointment details. Response might be invalid JSON.');
+          'No Appointment Found.');
     }
   }
 
