@@ -60,7 +60,7 @@ class _UserProfileState extends State<UserProfile> {
       if(responsee['status']==200){
       setState(() {
         // ignore: prefer_interpolation_to_compose_strings
-        imagePath ='http:// 192.168.232.215/api/'+responsee['photo_url'];
+        imagePath ='http://10.0.2.2/api/'+responsee['photo_url'];
       });
       print('->->->->->->->->->->->->->->$imagePath<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-<-');
     }else{

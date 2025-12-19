@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 class baseApi{
    final Dio  _dio=Dio(BaseOptions(
-    baseUrl: 'http://192.168.232.222/api/',
+    baseUrl: 'http://10.79.104.215/api/',
     connectTimeout: Duration(seconds: 10),
     receiveTimeout: Duration(seconds: 10),
     headers: {"Content-Type": "application/json"},

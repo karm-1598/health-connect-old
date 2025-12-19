@@ -333,7 +333,7 @@ void sortDoctors(String selecteOption){
                                                     min: '100',
                                                     controllerValue: controller2.rangevalues,
                                                     onChanged:
-                                                        (RangeValues v) {}),
+                                                        (RangeValues v) {controller2.rangevalues.value = v;}),
                                               ],
                                             ),
                                           )),
@@ -719,3 +719,4 @@ void sortDoctors(String selecteOption){
     );
   }
 }
+
