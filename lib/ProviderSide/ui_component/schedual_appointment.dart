@@ -54,7 +54,7 @@ class _ScheduleAppointmentState extends State<ScheduleAppointment> {
         'date': uDate,
         'start_time': uStartTime,
         'end_time': uEndTime,
-        'availability': availability == "available" ? "1" : "0",
+        'availability': availability == "Available" ? "1" : "0",
       });
 
       try {
@@ -278,7 +278,7 @@ class _ScheduleAppointmentState extends State<ScheduleAppointment> {
                     });
                   },
                   decoration: InputDecoration(labelText: 'Availability'),
-                  items: ['available', 'unavailable']
+                  items: ['Available', 'Unavailable']
                       .map((status) => DropdownMenuItem(
                             value: status,
                             child: Text(status),

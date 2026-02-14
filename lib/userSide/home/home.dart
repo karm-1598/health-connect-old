@@ -531,13 +531,13 @@ class _home_screenState extends State<home_screen> {
                 logout();
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.location_on),
-              title: Text('Google Map'),
-              onTap: (){
-                Get.to(()=>Googlemap());
-              },
-            ),
+            // ListTile(
+            //   leading: const Icon(Icons.location_on),
+            //   title: Text('Google Map'),
+            //   onTap: (){
+            //     // Get.to(()=>Googlemap());
+            //   },
+            // ),
            
           ],
         ),
